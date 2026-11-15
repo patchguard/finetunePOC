@@ -161,7 +161,7 @@ const UI = (() => {
       <div class="modal-actions"><button class="btn ghost" id="m-stay">Stay and look around</button><button class="btn" id="m-results">See the mission report →</button></div>`);
     let n = 8;
     const timer = setInterval(() => { n--; const el = $('#m-count'); if (el) el.textContent = `Opening the mission report in ${n} s…`; if (n <= 0) { clearInterval(timer); location.href = REPORT_URL(); } }, 1000);
-    $('#m-stay').onclick = () => { clearInterval(timer); closeModal(); UI.toast('The mission is over. Use “Mission report” in the top bar when you are ready.', '', 'Mission over'); $('#btn-round').textContent = '📄 Mission report'; };
+    $('#m-stay').onclick = () => { clearInterval(timer); closeModal(); UI.toast('The mission is over. Use “Mission report” in the top bar when you are ready.', '', 'Mission over'); $('#btn-round').textContent = '📄 Mission report'; $('#btn-round').hidden = false; };
     $('#m-results').onclick = () => { clearInterval(timer); location.href = REPORT_URL(); };
   }
   function endButton() { if (SIM.state && SIM.state.ended) location.href = REPORT_URL(); else confirmEndMission(); }

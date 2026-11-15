@@ -9,7 +9,7 @@ const OpsView = (() => {
     built = true;
     $('#ops').innerHTML = `
       <div class="row" style="justify-content:space-between;margin:0"><div><h2 style="font-size:22px" id="ops-title"></h2><div class="fine" style="margin:2px 0 0" id="ops-sub"></div></div>
-        <div class="row" style="margin:0"><button class="btn ghost small" id="ops-save">💾 Save now</button><button class="btn ghost small" id="ops-export">⬇ Export results JSON</button><button class="btn small" id="ops-round">🏁 End mission → report</button></div></div>
+        <div class="row" style="margin:0"><button class="btn ghost small" id="ops-save">💾 Save now</button><button class="btn ghost small" id="ops-export">⬇ Export results JSON</button></div></div>
       <div class="panel ops-live" id="ops-live"></div>
       <div class="kpis" id="kpis"></div>
       <div class="charts">
@@ -34,7 +34,6 @@ const OpsView = (() => {
       const blob = new Blob([JSON.stringify(SIM.results('export'), null, 2)], { type: 'application/json' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'blue-marble-results.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     };
-    $('#ops-round').onclick = () => $('#btn-round').click();
   }
 
   // change over the last 12 months, from the monthly history (▲ / ▼)
