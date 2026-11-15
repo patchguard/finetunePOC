@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mission Report — Methane Watch Tycoon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a1120; --panel:#101a2c; --panel2:#142036; --panel3:#18273f; --line:#22324c; --line2:#2d4363;
+  --ink:#e8eef8; --dim:#8c9bb5; --dim2:#62728e;
+  --accent:#f5a04a; --accentbg:#2a2014; --cyan:#4fc3f7; --cyanbg:#10304a;
+  --ok:#4fd08b; --warn:#f5c04a; --bad:#ff6b6b; --blue:#4fc3f7; --ch4:#b98cff;
+  --mono:'JetBrains Mono',ui-monospace,monospace; --head:'Space Grotesk','Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:radial-gradient(1200px 600px at 70% -10%,#13254a 0%,transparent 60%),var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:15.5px;line-height:1.55;min-height:100vh}
+h1,h2,h3{font-family:var(--head);font-weight:700;margin:0;color:#fff;letter-spacing:-.01em}
+h1{font-size:24px}
+h2{font-size:26px;margin-bottom:6px}
+h3{font-size:16.5px}
+b,strong{font-weight:700}
+a{color:var(--cyan)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px 24px}
+/* top bar */
+.top{position:sticky;top:0;z-index:40;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;background:rgba(10,17,32,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);margin:0 -20px 16px;padding:10px 20px;border-bottom:1px solid var(--line)}
+.tag{color:var(--cyan);font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase}
+.tag::before{content:'● ';color:var(--cyan)}
+.hud{display:flex;gap:8px;flex-wrap:wrap}
+.hud div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:5px 12px;font-size:11px;color:var(--dim);min-width:110px}
+.hud b{display:block;font-family:var(--mono);font-size:16px;color:#fff;font-weight:600}
+.hud .c b{color:var(--ch4)}
+.resetbtn{font-family:inherit;font-size:13px;background:transparent;color:var(--dim);border:1px solid var(--line2);border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:600;align-self:center}
+.resetbtn:hover{color:var(--bad);border-color:var(--bad)}
+/* stepper */
+.steps{display:flex;gap:0;margin:0 0 16px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 12px;overflow-x:auto;flex-wrap:nowrap}
+.steps span{display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:13px;color:var(--dim);padding:2px 4px;flex:1}
+.steps span i{font-style:normal;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--line2);font-family:var(--mono);font-size:11px;flex:none}
+.steps span.on{color:#fff;font-weight:600}.steps span.on i{border-color:var(--accent);background:var(--accent);color:#1a1205}
+.steps span.done{color:var(--cyan)}.steps span.done i{border-color:var(--cyan);color:var(--cyan)}
+.steps span:not(:last-child)::after{content:'';flex:1;height:1px;background:var(--line2);min-width:10px;margin-left:6px}
+.steps span.done:not(:last-child)::after{background:var(--cyan);opacity:.5}
+/* layout */
+.grid{display:grid;grid-template-columns:1fr 340px;gap:16px}
+@media(max-width:940px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}
+.side{position:sticky;top:84px;align-self:start;max-height:calc(100vh - 100px);overflow:auto}
+@media(max-width:940px){.side{position:static;max-height:none}}
+.role{display:inline-block;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--cyan);background:var(--cyanbg);border:1px solid #1d4b6e;border-radius:6px;padding:3px 9px;margin:0 0 10px}
+.lead{color:var(--dim);margin:4px 0 16px}
+.sec{margin:22px 0 10px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;justify-content:space-between}
+.sec h3{font-size:15px}
+.sec small{color:var(--dim2);font-size:12.5px}
+.pill{font-size:13px;color:var(--dim)}
+.note{font-size:12px;color:var(--dim2);margin-top:12px}
+.flex{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.label{font-family:var(--mono);font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim2)}
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px 14px;cursor:pointer;transition:.15s;position:relative;display:flex;flex-direction:column}
+.card:hover{border-color:var(--line2);background:var(--panel3)}
+.card.sel{border-color:var(--cyan);background:var(--cyanbg);box-shadow:0 0 0 1px var(--cyan) inset}
+.card.sel::after{content:'✓';position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:var(--cyan);color:#06263a;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
+.card.lock{opacity:.4;cursor:not-allowed}
+.card .t{font-family:var(--head);font-size:15.5px;font-weight:600;margin-bottom:4px;line-height:1.3;color:#fff;padding-right:26px}
+.card .d{color:var(--dim);font-size:13px;margin-bottom:10px;line-height:1.5}
+.card .stats{margin-top:auto}
+.lockt{font-size:12px;color:var(--ch4);margin-bottom:4px;font-weight:600}
+.stats{display:flex;flex-wrap:wrap;gap:4px}
+.stats b{font-family:var(--mono);font-weight:400;font-size:11.5px;background:#0b1424;border:1px solid var(--line);border-radius:5px;padding:2px 6px;color:#c3cee0}
+.eff{position:relative;height:6px;background:#0b1424;border-radius:3px;margin:2px 0 22px}
+.eff span{position:absolute;inset:0 auto 0 0;border-radius:3px;background:linear-gradient(90deg,var(--cyan),#7ee0ff)}
+.eff em{position:absolute;top:8px;left:0;font-style:normal;font-family:var(--mono);font-size:11px;color:var(--cyan)}
+.mission{border-top:3px solid var(--tier)}
+.mission .tierb{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--tier);border:1px solid var(--tier);border-radius:20px;padding:0 8px;margin-bottom:6px}
+/* buttons */
+.btn{font-family:var(--head);font-size:15px;background:var(--accent);color:#1d1204;border:0;border-radius:10px;padding:11px 22px;cursor:pointer;font-weight:700;box-shadow:0 4px 14px rgba(245,160,74,.18)}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.3;cursor:not-allowed;box-shadow:none}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2);box-shadow:none}
+.nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;position:sticky;bottom:0;background:linear-gradient(rgba(16,26,44,0),var(--panel) 35%);padding:22px 0 2px;margin-top:10px;z-index:5}
+/* meters */
+.meter{margin:10px 0}
+.meter .row{display:flex;justify-content:space-between;font-size:13px;gap:8px;color:var(--dim)}
+.meter .row span:last-child{font-family:var(--mono);font-size:12px;color:#fff}
+.bar{height:6px;background:#0b1424;border-radius:3px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--cyan);border-radius:3px}
+/* checks */
+.chk{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.chk .s{width:20px;flex:none;font-weight:700}
+.chk .why{color:var(--dim);font-size:12.5px}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.info{color:var(--cyan)}
+/* crew */
+.players{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.players button{font-family:inherit;font-size:14px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer}
+.players button.sel{border-color:var(--cyan);background:var(--cyanbg);color:#fff}
+input[type=text]{font-family:inherit;font-size:14px;background:#0b1424;color:var(--ink);border:1px solid var(--line2);border-radius:8px;padding:7px 10px;width:140px}
+.go{display:flex;gap:8px;flex-wrap:wrap}
+.go button{font-family:inherit;font-size:14px;padding:11px 14px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);cursor:pointer}
+.go button.yes{border-color:var(--ok);color:var(--ok);background:#0f2a1f;font-weight:700}
+/* log */
+.log{height:250px;overflow:auto;background:#0b1424;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px}
+.log p{margin:0 0 6px;padding-left:10px;border-left:2px solid var(--line2)}
+.log p.ok{border-left-color:var(--ok)}.log p.warn{border-left-color:var(--warn)}.log p.bad{border-left-color:var(--bad)}
+.log p.ok,.log p.warn,.log p.bad{color:var(--ink)}
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+td{padding:7px 4px;border-bottom:1px solid var(--line);color:var(--ink)}
+td:last-child{text-align:right;font-family:var(--mono);font-size:12.5px}
+.why-box{background:#0f1e33;border-left:3px solid var(--cyan);padding:9px 13px;border-radius:6px;color:#cfdcef;font-size:13.5px;margin:10px 0}
+.alert{background:#2a1416;border-left:3px solid var(--bad);padding:10px 14px;border-radius:6px;font-size:14px;margin:12px 0}
+.ledger{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0}
+.ledger .big{font-family:var(--mono);font-size:22px;font-weight:600}
+.unlock{background:#1c1633;border:1px solid #4a3a7a;color:#d9c8ff;border-radius:10px;padding:8px 12px;margin:6px 0;font-size:14px}
+.score{font-family:var(--head);font-size:68px;font-weight:700;color:var(--accent);line-height:1}
+.stars{font-size:26px;letter-spacing:4px;color:var(--accent)}
+.stars span{color:#2a3a55}
+/* reset modal */
+.modal{position:fixed;inset:0;background:rgba(3,8,18,.7);display:flex;align-items:center;justify-content:center;z-index:70;padding:16px}
+.modal .box{background:var(--panel);border:1px solid var(--line2);border-radius:16px;padding:22px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal .opt{display:block;width:100%;text-align:left;font-family:inherit;font-size:15px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;cursor:pointer;color:var(--ink)}
+.modal .opt:hover{border-color:var(--cyan)}
+.modal .opt.danger{border-color:#5a2a2e}
+.modal .opt b{display:block;font-size:15px}
+.modal .opt span{color:var(--dim);font-size:13px}
+.modal .opt:disabled{opacity:.4;cursor:not-allowed}
+/* builder: vertical category list */
+.builder{display:grid;grid-template-columns:200px 1fr;gap:14px;align-items:start}
+@media(max-width:700px){.builder{grid-template-columns:1fr}}
+.catnav{display:flex;flex-direction:column;gap:6px;position:sticky;top:84px}
+.catnav button{text-align:left;font-family:inherit;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;cursor:pointer;color:var(--ink)}
+.catnav button b{display:block;font-size:13.5px;font-weight:600}
+.catnav button span{display:block;font-size:11.5px;color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catnav button.on{border-color:var(--cyan);background:var(--cyanbg)}
+.catnav button.miss span{color:var(--warn)}
+.catnav .hint{font-size:11.5px;color:var(--dim2);margin-top:8px;line-height:1.4}
+/* sidebar build summary */
+.parts{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12.5px;margin:10px 0 4px}
+.parts .nm{color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.parts .none{color:var(--warn)}
+details summary{list-style:none}
+details summary::-webkit-details-marker{display:none}
+/* incident: decision event */
+.incident{position:fixed;inset:0;z-index:60;background:rgba(3,8,18,.72);align-items:center;justify-content:center;padding:16px}
+.inc-box{background:var(--panel);max-width:720px;width:100%;border-radius:16px;border:1px solid var(--line2);overflow:hidden;max-height:92vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:pop .22s ease-out}
+.inc-strip{display:flex;justify-content:space-between;background:#2a1d10;color:var(--accent);font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:9px 18px}
+.inc-body{padding:18px 20px 20px}
+@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+.inc-h{display:flex;gap:12px;align-items:flex-start}
+.inc-i{font-size:34px;line-height:1}
+.inc-h h3{font-size:22px;margin-bottom:6px}
+.inc-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:14px 0}
+.incident .opt{text-align:left;font-family:inherit;font-size:14px;background:var(--panel2);border:1px solid var(--line2);border-radius:12px;padding:12px 14px;cursor:pointer;color:var(--ink)}
+.incident .opt:hover{border-color:var(--cyan);background:var(--cyanbg)}
+.incident .opt:disabled{opacity:.4;cursor:not-allowed}
+.incident .opt b{display:block;font-size:15px;margin-bottom:3px;color:#fff}
+.incident .opt span{color:var(--dim);font-size:12.5px}
+.fact{background:#0b1424;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:4px 0 12px;font-size:13px;color:#cfdcef}
+.fact .label{color:var(--cyan);display:block;margin-bottom:3px}
+/* report */
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:6px 0 16px}
+.hero h2{font-size:40px;line-height:1.1}
+.final{text-align:right}
+.final .num{font-family:var(--head);font-size:64px;font-weight:700;color:var(--accent);line-height:1}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:820px){.cols3{grid-template-columns:1fr}}
+.colp{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px}
+.colp h3{font-size:14.5px;margin-bottom:8px}
+.sb{margin:8px 0}.sb .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--dim)}.sb .row span:last-child{font-family:var(--mono);color:#fff}
+.mini{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;border-bottom:1px solid var(--line)}
+.ring{position:relative;width:120px;height:120px;flex:none}
+.ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:36px;font-weight:700;color:var(--accent)}
+.tabs{display:none}
+.modesw{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.modesw button{text-align:left;font-family:inherit;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;color:var(--ink)}
+.modesw button b{display:block;font-family:var(--head);font-size:16px}
+.modesw button span{font-size:12.5px;color:var(--dim)}
+.modesw button.on{border-color:var(--ch4);background:#1c1633;box-shadow:0 0 0 1px var(--ch4) inset}
+.players button:disabled{opacity:.4;cursor:not-allowed}
+.res-hero{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center;padding:22px;border-radius:16px;margin:-4px -4px 14px;background:linear-gradient(135deg,#13254a 0%,#101a2c 60%);border:1px solid var(--line2);position:relative;overflow:hidden}
+.res-hero.win{background:radial-gradient(600px 220px at 85% 50%,rgba(79,208,139,.18),transparent 70%),linear-gradient(135deg,#13254a,#101a2c 60%)}
+.res-hero.lost{background:radial-gradient(600px 220px at 85% 50%,rgba(255,107,107,.15),transparent 70%),linear-gradient(135deg,#2a1520,#101a2c 60%)}
+.res-l{flex:1;min-width:280px}
+.res-h{font-size:42px;line-height:1.08;margin:6px 0 8px}
+.res-r{text-align:center}
+.ring.big{width:170px;height:170px;margin:0 auto}
+.ring.big b{font-size:56px}
+.rankb{display:inline-block;margin-top:4px;font-family:var(--mono);font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#1d1204;background:var(--accent);border-radius:20px;padding:3px 12px;font-weight:700}
+.achrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.ach{font-size:12.5px;padding:4px 10px;border-radius:20px;border:1px solid var(--line2);color:var(--dim2);background:#0b1424;filter:grayscale(1);opacity:.6;cursor:help}
+.ach.on{filter:none;opacity:1;color:#fff;border-color:var(--accent);background:#2a2014}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+@media(max-width:820px){.tiles{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.tv{font-family:var(--head);font-size:30px;font-weight:700;line-height:1.1;margin:4px 0 2px}
+.tv small{font-size:15px;color:var(--dim);font-weight:500}
+.res-grid{display:grid;grid-template-columns:1.7fr 1fr;gap:12px}
+@media(max-width:900px){.res-grid{grid-template-columns:1fr}}
+.evlist{max-height:150px;overflow:auto;margin-top:8px;font-size:13px}
+.evi{display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid var(--line)}
+.evd{width:8px;height:8px;border-radius:50%;flex:none}
+.mono{font-family:var(--mono);font-size:11.5px;color:var(--dim2);width:34px}
+.ladder{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:6px}
+.ladder div{background:#0b1424;border:1px solid var(--line);border-radius:8px;padding:6px;text-align:center}
+.ladder b{display:block;font-size:11px;line-height:1.25}
+.ladder span{font-family:var(--mono);font-size:10px;color:var(--dim2)}
+.ladder .past{border-color:#1d4b6e}.ladder .past b{color:var(--cyan)}
+.ladder .on{background:var(--accent);border-color:var(--accent)}.ladder .on b,.ladder .on span{color:#1d1204}
+.grow{animation:grow 1s ease-out}
+@keyframes grow{from{width:0}}
+.draw{stroke-dasharray:2000;stroke-dashoffset:2000;animation:draw 1.6s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+</style>
+<!-- Mission: Blue Marble mission report (shown when the simulation sends the player here) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="simulation/report/report.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="tag">NASA Space Apps 2026 · Space Mission Design Game · Climate edition</div>
+      <h1>CurioFrontierX</h1>
+    </div>
+    <div class="hud" id="hud"></div>
+  </header>
+  <div class="steps" id="steps" style="display:none"></div>
+  <div class="grid">
+    <main class="panel" id="main"></main>
+    <aside class="panel side" id="side"></aside>
+  </div>
+  <p class="note">Space weather, cloud cover, and methane plume locations come from real NASA data: OMNI, POWER, and EMIT. Part prices and specs are based on real hardware. Other numbers are simplified game values loosely based on real methane satellites (TROPOMI, EMIT, MethaneSAT, Carbon Mapper, MERLIN) and real launch vehicles. They are not engineering specifications. Your agency's progress is saved in this browser.</p>
+</div>
+
+<script>
+// ===================== DATA =====================
+// All money is in thousands of US dollars ($K). Masses in kg, power in W.
+const SCEN = [
+ {id:'pilot',name:'Permian Pilot',rep:0,diff:'Tier 1',
+  desc:'Prove your agency can do this. Fly a small CubeSat over the Permian Basin in Texas, one of the world\'s biggest oil and gas fields, and catch methane leaks and gas flares.',
+  goal:'Detect methane over a single oil and gas basin.',tags:['oil','point'],ref:350,reward:700,months:12,target:25,heater:3,ops:3,
+  impact:'super-emitters',emit:1,mt:0.15,
+  orbits:[
+   {id:'leo',name:'LEO 51.6° inclined',dest:'LEO',dv:60,sci:0.9,ecl:0.36,eclH:0.6,radM:1,dist:1,contact:0.67,d:'Reaches latitude 32°N, where the Permian is, but spends a third of each orbit in Earth\'s shadow.'},
+   {id:'sso',name:'Sun-synchronous (dawn–dusk)',dest:'SSO',dv:100,sci:1.0,ecl:0,eclH:0,radM:1,dist:1,contact:0.67,d:'Same lighting on every pass and never in shadow. Methane sensors measure reflected sunlight, so consistent lighting matters.'},
+   {id:'eq',name:'Equatorial LEO',dest:'LEO',dv:40,sci:0.1,ecl:0.38,eclH:0.6,radM:1,dist:1,contact:0.67,d:'Stays near the equator and never sees Texas.'}]},
+ {id:'hunter',name:'Leak Hunter',rep:3,diff:'Tier 2',
+  desc:'Find the worst individual leaks worldwide: gas wells, pipelines, coal mines, and landfills. A few "super-emitters" cause a big share of methane pollution, and they can be fixed fast.',
+  goal:'Pinpoint individual super-emitters around the world.',tags:['point','oil','landfill'],ref:700,reward:1500,months:24,target:45,heater:3,ops:4,
+  impact:'super-emitters',emit:2.5,mt:0.15,
+  orbits:[
+   {id:'sso',name:'Sun-synchronous (600 km)',dest:'SSO',dv:100,sci:1.0,ecl:0,eclH:0,radM:1,dist:1,contact:0.67,d:'Covers the whole planet, including the oil and gas fields of Siberia and Canada.'},
+   {id:'leo',name:'LEO 51.6° inclined',dest:'LEO',dv:60,sci:0.6,ecl:0.36,eclH:0.6,radM:1,dist:1,contact:0.67,d:'Misses the high-latitude gas fields.'},
+   {id:'vleo',name:'Very low orbit (350 km)',dest:'LEO',dv:600,sci:1.0,ecl:0.38,eclH:0.6,radM:1,dist:1.3,contact:0.5,d:'Gets sharper pixels by flying closer, but air drag means you need fuel to keep the orbit up.'}]},
+ {id:'mapper',name:'Global Methane Mapper',rep:5,diff:'Tier 3',
+  desc:'Map methane across the whole planet, including diffuse sources like wetlands, rice paddies, and cattle. These maps tell scientists how methane is changing the climate.',
+  goal:'Map methane over the whole Earth every day.',tags:['global','area','wetland'],ref:850,reward:2000,months:36,target:40,heater:4,ops:5,
+  impact:'regions mapped',emit:3,mt:0.5,
+  orbits:[
+   {id:'sso',name:'Sun-synchronous (820 km)',dest:'SSO',dv:120,sci:1.0,ecl:0,eclH:0,radM:1,dist:1,contact:0.8,d:'Covers the whole world once a day. TROPOMI uses this kind of orbit.'},
+   {id:'leo',name:'LEO 51.6° inclined',dest:'LEO',dv:60,sci:0.55,ecl:0.36,eclH:0.6,radM:1,dist:1,contact:0.67,d:'Misses the Arctic wetlands.'},
+   {id:'geo',name:'Geostationary',dest:'LEO',dv:1800,sci:0.35,ecl:0.05,eclH:1.2,radM:1.3,dist:0.3,contact:24,d:'Sees only one hemisphere and needs a big burn to get there.'}]},
+ {id:'arctic',name:'Arctic Night Watch',rep:8,diff:'Tier 4',
+  desc:'As permafrost thaws, it releases methane that was trapped for thousands of years. But the Arctic is dark for months in winter, and sunlight-based sensors go blind.',
+  goal:'Monitor permafrost methane all year, including the polar night.',tags:['arctic'],ref:900,reward:2400,months:24,target:45,heater:6,ops:6,
+  impact:'early warnings',emit:1.2,mt:0.6,
+  orbits:[
+   {id:'sso',name:'Polar sun-synchronous',dest:'SSO',dv:120,sci:1.0,ecl:0,eclH:0,radM:1,dist:1,contact:1.5,d:'Passes over the poles on every orbit. High-latitude ground stations give extra contact time.'},
+   {id:'heo',name:'Highly elliptical (Molniya)',dest:'LEO',dv:1300,sci:0.8,ecl:0.1,eclH:1.5,radM:1.8,dist:0.5,contact:12,d:'Hovers over the Arctic for hours at a time, but crosses the radiation belts twice a day.'},
+   {id:'leo',name:'LEO 51.6° inclined',dest:'LEO',dv:60,sci:0.2,ecl:0.36,eclH:0.6,radM:1,dist:1,contact:0.67,d:'Never gets far enough north.'}]},
+ {id:'geo',name:'GEO Methane Sentinel',rep:11,diff:'Tier 5',
+  desc:'Watch the whole Americas continuously, every hour, so you can see leaks start and stop as they happen. NASA\'s GeoCarb tried this and was cancelled. Can your agency pull it off?',
+  goal:'Monitor methane continuously over a whole hemisphere.',tags:['global','point','area'],ref:1800,reward:5000,months:60,target:60,heater:5,ops:8,
+  impact:'super-emitters',emit:4,mt:0.2,
+  orbits:[
+   {id:'geo',name:'Geostationary (75°W)',dest:'LEO',dv:1800,sci:1.0,ecl:0.05,eclH:1.2,radM:1.3,dist:0.3,contact:24,d:'Hovers over the Americas all the time and stays in contact around the clock.'},
+   {id:'sso',name:'Sun-synchronous',dest:'SSO',dv:100,sci:0.4,ecl:0,eclH:0,radM:1,dist:1,contact:0.67,d:'Passes over each place only once a day, which isn\'t continuous.'},
+   {id:'leo',name:'LEO 51.6° inclined',dest:'LEO',dv:60,sci:0.3,ecl:0.36,eclH:0.6,radM:1,dist:1,contact:0.67,d:'Brief passes only.'}]}
+];
+
+const PARTS = {
+ power:[
+  {id:'sa_none',name:'No solar panels',rep:0,m:0,gen:0,c:0,d:'Only makes sense with a nuclear RTG.'},
+  {id:'sa_body',name:'Body-mounted solar cells',rep:0,m:0.3,gen:10,c:8,d:'Cells glued to the CubeSat\'s sides. Cheap, but there isn\'t much surface area.'},
+  {id:'sa_3u',name:'Deployable 3U wings',rep:0,m:0.6,gen:30,c:18,d:'Fold-out panels for a small CubeSat.'},
+  {id:'sa_6u',name:'Deployable 6U wings',rep:0,m:1.2,gen:60,c:35,d:'Bigger fold-out wings for a 6U–12U spacecraft.'},
+  {id:'sa_hawk',name:'High-power HaWK-style arrays',rep:4,m:2.5,gen:140,c:70,d:'Large articulating arrays. Enough to run a laser instrument.'}],
+ battery:[
+  {id:'b_nicd',name:'Vintage NiCd Pack',rep:0,eff:30,m:0.7,wh:20,c:1.2,fade:0.4,d:'Heavy 1980s battery (~30 Wh/kg). Loses capacity within 1–2 years in LEO. Best for short, low-budget test flights.'},
+  {id:'b_nih2',name:'Nickel-Hydrogen Tank',rep:0,eff:45,m:0.9,wh:50,c:2.8,d:'Bulky older technology (~55 Wh/kg), modeled on Hubble\'s original cells. Lasts a very long time, but it\'s heavy.'},
+  {id:'b_lis',name:'Small CubeSat Li-Ion',rep:0,eff:60,m:0.35,wh:40,c:3.5,dod:0.3,d:'Standard starter pack. Lasts 3–5 years if kept under 30% depth of discharge (DoD). Wears out early if pushed hard.'},
+  {id:'b_lil',name:'Large CubeSat Li-Ion',rep:0,eff:75,m:0.8,wh:100,c:7.5,d:'Mid-tier workhorse. Easily handles 35-minute eclipses plus heater power.'},
+  {id:'b_ss',name:'Solid-State Prototype',rep:2,eff:85,m:0.4,wh:150,c:14,risk:0.15,d:'Ultra-light experimental pack (~400 Wh/kg). Saves a lot of mass, but has a 15% chance of a cell failure in orbit.'},
+  {id:'b_ves',name:'Space-Grade VES Module',rep:3,eff:90,m:6.5,wh:1000,c:18,d:'Aerospace-grade module modeled on Saft VES cells. Survives 12+ years for heavy satellites with many sensors.'},
+  {id:'b_rtg',name:'Deep-Space RTG',rep:5,eff:100,m:45,wh:0,c:45,rtg:100,d:'Nuclear power source giving a constant 100 W. Ignores eclipses and cold completely, but it\'s too heavy for small CubeSats.'}],
+ storage:[
+  {id:'st_sd',name:'Industrial SLC MicroSD Card',rep:0,m:0.005,p:0.5,c:0.15,cap:32,rad:0.5,dm:1,d:'Off-the-shelf flash memory (10–20 MB/s) used on student CubeSats. No radiation shielding, so cosmic-ray bit flips and early failure are likely.'},
+  {id:'st_cfc',name:'Innoflight CFC-400 Flight Computer',rep:0,m:0.25,p:6.3,c:18,cap:16,rad:1.5,dm:1,d:'Compact command-and-data-handling computer (Zynq UltraScale+). Radiation monitoring handles 3–5 year LEO missions, but its small flash needs frequent downlinks.'},
+  {id:'st_ssdr',name:'NASA SpaceCube Mini SSDR',rep:1,m:0.35,p:6,c:35,cap:1500,rad:3,dm:1,d:'1.5 TB recorder with Reed-Solomon error correction, built for harsh radiation. It only stores data. It doesn\'t process it.'},
+  {id:'st_sc3',name:'NASA SpaceCube v3.0 Mini',rep:2,m:0.25,p:13,c:55,cap:32,rad:2.5,dm:0.5,cloud:true,d:'FPGA processor that runs cloud masking in orbit, like NASA\'s EMIT, and throws away cloudy data before sending. Halves your data but uses more power.'},
+  {id:'st_m4',name:'SwRI Multi-Mission SSR (M4)',rep:4,m:3.5,p:22,c:95,cap:1500,rad:3,dm:1,tmr:true,d:'Aerospace-grade 1.5 TB recorder (ICESat-2/PACE heritage). Triple-redundant memory survives 10+ years with no data loss, but it\'s heavy and power-hungry.'},
+  {id:'st_ix10',name:'Unibap SpaceCloud iX10-100',rep:5,m:2.8,p:35,c:140,cap:3000,rad:2,dm:0.1,cloud:true,ai:true,d:'AI computer (100+ TOPS) that turns raw spectrometer data into methane-plume coordinates on board. Cuts data by 90%, but needs a lot of power and cooling.'}],
+ comms:[
+  {id:'c_uhf',name:'EnduroSat UHF Transceiver II',rep:0,m:0.15,p:6,rate:0.0196,c:7.9,point:false,d:'435 MHz omnidirectional radio, 19.6 kbps. Keeps a link even while tumbling, but far too slow for images.'},
+  {id:'c_s',name:'EnduroSat S-Band Transceiver',rep:0,m:0.35,p:10,rate:2,c:17.5,point:false,d:'2.2 GHz wide-beam radio, 2 Mbps. Rain and clouds don\'t affect it, but it only handles small or compressed files.'},
+  {id:'c_x',name:'EnduroSat X-Band Transmitter',rep:0,m:0.85,p:22,rate:150,c:34.3,point:true,d:'8 GHz directional transmitter, 150 Mbps. Sends gigabytes per pass, but needs precise pointing at the ground dish.'},
+  {id:'c_ng',name:'CesiumAstro Nightingale X-Band',rep:3,m:2.2,p:38,rate:1000,c:85,point:false,d:'Phased array, 1 Gbps. Steers its beam ±60° electronically, so the satellite doesn\'t need to turn.'},
+  {id:'c_ka',name:'NASA PACE Ka-Band System',rep:4,m:3.5,p:55,rate:1500,c:130,point:true,wx:'rain',d:'26 GHz, 0.6–2.8 Gbps. Empties huge recorders fast, but its narrow beam suffers "rain fade" during storms over the ground station.'},
+  {id:'c_tbird',name:'NASA TBIRD Laser Terminal',rep:6,m:3,p:99,rate:100000,c:220,point:true,wx:'cloud',d:'1550 nm optical laser, 100–200 Gbps. Up to 4.8 TB in a 5-minute pass, but cloud over the ground telescope blocks it completely.'}],
+ adcs:[
+  {id:'a_mag',name:'Magnetorquers only (coarse)',rep:0,m:0.2,p:1,fine:false,c:9,d:'Pushes against Earth\'s magnetic field. Points to within about 5°.'},
+  {id:'a_rw',name:'Reaction wheels + star tracker (fine)',rep:0,m:1.0,p:4,fine:true,c:45,d:'Points to within 0.01°, with a spare wheel. Needed for zoom spectrometers and dish radios.'}],
+ engine:[
+  {id:'e_none',name:'No thruster',rep:0,eff:0,m:0,isp:0,c:0,d:'Only works if the orbit needs no burn. You can\'t dodge debris either.'},
+  {id:'e_cold',name:'Cold Gas Thruster (Nitrogen)',rep:0,eff:25,m:0.8,isp:65,c:2.5,d:'Simple pressurized nitrogen jets. Cheap and safe, but so inefficient it can only make small adjustments.'},
+  {id:'e_resisto',name:'Resistojet Thruster (Water/Butane)',rep:0,eff:40,m:1.2,isp:100,c:5.5,pw:8,d:'Heats water or gas with an electric coil. Affordable, but draws extra power when heating.'},
+  {id:'e_hydra',name:'Hydrazine Monopropellant',rep:0,eff:60,m:2.2,isp:220,c:10.5,fee:4,d:'Classic, reliable chemical thruster. The fuel is toxic, so it adds a $4K launch-prep fee.'},
+  {id:'e_green',name:'Green Monopropellant (ASCENT)',rep:1,eff:75,m:2.0,isp:250,c:16.5,d:'Modern non-toxic fuel with more energy than hydrazine and no handling fee.'},
+  {id:'e_es',name:'Electrospray Ion Thruster',rep:3,eff:85,m:1.1,isp:1500,c:24,slow:250,gentle:true,d:'Tiny electric thrusters firing charged droplets. Uses very little fuel, but the push is so gentle that big orbit changes take months and it can\'t dodge debris.'},
+  {id:'e_dual',name:'Dual-Mode Chemical-Electrospray',rep:5,eff:92,m:2.8,isp:900,c:31,d:'NASA-tested hybrid: fast chemical burns plus efficient electric cruising from one tank. The best all-around choice.'},
+  {id:'e_hall',name:'Hall-Effect Ion Thruster (Xenon)',rep:6,eff:100,m:4.5,isp:1600,c:42,fee:8,slow:600,pw:15,needs:'b_ves',d:'Magnetic plasma thruster for 10+ year missions. Xenon fuel adds an $8K fee, and it needs a Space-Grade VES battery.'}],
+ structure:[
+  {id:'s_al',name:'Aluminum CubeSat frame',rep:0,frac:0.2,c:6,d:'Cheap. Adds 20% to the dry mass.'},
+  {id:'s_cf',name:'Carbon composite frame',rep:2,frac:0.12,c:15,d:'Light but costly. Adds 12%.'}]
+};
+PARTS.power=[]; // solar power now comes from the agency array bought at HQ
+const INST = [
+ {id:'ctx',name:'Basic NIR Context Camera',rep:0,eff:25,m:0.3,p:2,c:3.5,data:4,sci:8,fine:false,day:true,tags:['point','oil','landfill'],
+  d:'Daytime reference photos showing whether a target is a factory or a farm. Can\'t see methane directly, and clouds and darkness block it.'},
+ {id:'swath',name:'Wide-Swath SWIR Scanner',rep:0,eff:60,m:1.5,p:8,c:10,data:20,sci:19,fine:false,day:true,tags:['global','area','wetland','oil'],
+  d:'Scans huge strips of continent to find major methane hotspots. Only works in clear, sunny daytime conditions.'},
+ {id:'mwir',name:'MWIR Flare & Fire Tracker',rep:0,eff:65,m:1.2,p:7,c:14.5,data:10,sci:20,fine:false,tags:['oil','point'],
+  d:'Spots unlit oil flares, wildfires, and hot gas plumes day or night. Sees through thin smoke, but thick storm clouds block it.'},
+ {id:'lwir',name:'LWIR Thermal Gas Imager',rep:1,eff:75,m:2.0,p:10,c:19,data:12,sci:23,fine:false,tags:['arctic','global','area','wetland'],pen:{arctic:0.6},
+  d:'Reads heat signatures to track methane on both the day and night sides of Earth. Less accurate over frozen tundra or oceans.'},
+ {id:'point',name:'Point-Source Zoom Spectrometer',rep:1,eff:90,m:2.5,p:14,c:26,data:60,sci:28,fine:true,day:true,tags:['point','oil','landfill'],
+  d:'High-resolution SWIR interferometer that pinpoints the exact leaking facility, which earns the biggest payouts. Needs precise pointing and clear skies.'},
+ {id:'lidar',name:'Active TDLAS Methane LIDAR',rep:6,eff:100,m:6,p:45,c:38,data:1,sci:31,fine:true,tags:['arctic','global','area','wetland','point'],
+  d:'Fires its own infrared laser to detect methane day and night, over land or ocean, with no false alarms. Very heavy and uses a lot of power.'}
+];
+const LAUNCH = [
+ {id:'r3',name:'3U CubeSat rideshare slot',c:90,cap:{LEO:5,SSO:5},d:'Up to 5 kg. Shares a rocket with dozens of other satellites.'},
+ {id:'r6',name:'6U CubeSat rideshare slot',c:160,cap:{LEO:12,SSO:12},d:'Up to 12 kg.'},
+ {id:'r12',name:'12U CubeSat rideshare slot',c:280,cap:{LEO:24,SSO:24},d:'Up to 24 kg.'},
+ {id:'espa',name:'ESPA microsat rideshare port',c:650,cap:{LEO:180,SSO:150},d:'Up to 180 kg on a ring under a big rocket\'s main payload.'},
+ {id:'el',name:'Dedicated Electron launch',c:7500,cap:{LEO:300,SSO:200},d:'A whole rocket just for you. You pick the orbit, but it\'s very expensive.'}
+];
+const FOOD = [
+ {id:'noodle',name:'Instant noodles',c:1,morale:35,err:0.08,sci:0.9,d:'Cheap, but the team is tired, grumpy, and makes mistakes.'},
+ {id:'cafe',name:'Cafeteria meals',c:3,morale:65,err:0.03,sci:1.0,d:'Decent food. The team gets through the long shifts.'},
+ {id:'catered',name:'Healthy catered meals',c:6,morale:88,err:0.01,sci:1.05,d:'Fresh, healthy meals. The team stays sharp and focused.'},
+ {id:'chef',name:'Mission-control chef',c:12,morale:100,err:0,sci:1.08,d:'Gourmet food around the clock. Great morale, but expensive for what you gain.'}
+];
+const DEST_NAME={LEO:'low Earth orbit',SSO:'sun-synchronous orbit'};
+const ROLES=[
+ {id:'lead',name:'Agency Director',job:'Chooses missions and manages the agency\'s money.'},
+ {id:'eng',name:'Spacecraft Engineer',job:'Designs power, structure, pointing, and propulsion.'},
+ {id:'sci',name:'Climate Scientist',job:'Chooses the methane instruments.'},
+ {id:'ops',name:'Launch & Data',job:'Picks the rocket and orbit, and gets the data down to the ground.'}];
+const STEPS=['HQ','Spacecraft','Payload','Launch & Orbit','Go / No-Go','Flight','Report'];
+const STEP_ROLE=['lead','eng','sci','ops',null,null,null];
+const START_FUNDS=500, DEFUND=100; // $K
+const BASE_POWER=50, POWER_STEP=25, POWER_MAX=300, PANEL_KG_PER_W=0.02; // agency solar array, in W
+const powerPrice=()=>30+15*((A.power-BASE_POWER)/POWER_STEP); // $K for the next +25 W
+function agencyPanel(){return {id:'agency',name:`Agency solar array (${A.power} W)`,m:A.power*PANEL_KG_PER_W,gen:A.power,c:0};}
+function buyPower(){const pr=powerPrice(); if(A.funds<pr||A.power>=POWER_MAX) return; A.funds-=pr; A.power+=POWER_STEP; save(); render();}
+
+// ===================== STATE =====================
+const fresh=()=>({funds:START_FUNDS,power:BASE_POWER,rep:0,missions:0,emitters:0,mt:0,best:{},cleared:{},history:[]});
+let A=load()||fresh(); if(A.power===undefined) A.power=BASE_POWER;
+const S={step:0,n:1,names:['Player 1','Player 2','Player 3','Player 4'],scen:null,
+ sel:{},inst:new Set(),launch:null,orbit:null,votes:[],result:null,payout:null};
+function defaults(){S.tab='battery';S.sel={power:null,battery:null,storage:null,comms:null,adcs:null,engine:'e_none',structure:'s_al'};S.inst=new Set();S.launch=null;S.orbit=null;S.food='cafe';S.result=null;S.payout=null;}
+defaults();
+function save(){try{localStorage.setItem('methane-tycoon-v2',JSON.stringify(A));}catch(e){}}
+function load(){try{const s=localStorage.getItem('methane-tycoon-v2');return s?JSON.parse(s):null;}catch(e){return null;}}
+
+const $=id=>document.getElementById(id);
+const find=(arr,id)=>arr.find(x=>x.id===id);
+const fmt=(x,d=0)=>Number(x).toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:d});
+const money=x=>{x=Number(x); const n=x<0?'-':''; x=Math.abs(x);
+ if(x>=1000) return n+'$'+fmt(x/1000,x>=10000?1:2)+'M';
+ if(x<1) return n+'$'+fmt(x*1000);
+ return n+'$'+fmt(x,x<10&&x%1?1:0)+'K';};
+const kg=x=>x<1?fmt(x*1000)+' g':fmt(x,x<10?2:1)+' kg';
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+function playerFor(role){const i=ROLES.findIndex(r=>r.id===role);return S.names[i% S.n];}
+const unlocked=o=>S.creative||(o.rep||0)<=A.rep;
+const ACC_LEVELS=[['Off',0],['Low',0.5],['Normal',1],['Chaos',2.5]];
+function loadCreative(){try{const c=JSON.parse(localStorage.getItem('methane-tycoon-creative')||'null'); if(c){S.creative=c.on;S.acc=c.acc;S.timerOn=c.timer;}}catch(e){}}
+function saveCreative(){try{localStorage.setItem('methane-tycoon-creative',JSON.stringify({on:S.creative,acc:S.acc,timer:S.timerOn}));}catch(e){}}
+S.creative=false; S.acc={level:2,off:{}}; S.timerOn=true; loadCreative();
+function setMode(on){S.creative=on;saveCreative();render();}
+
+// ===================== MODEL =====================
+const DUTY=0.5; // detectors only run over targets on the right side of Earth, about half the time
+function battWh(c,month){const b=c.p.battery; if(!b) return 0; let wh=b.wh; if(b.fade) wh*=Math.max(0.2,1-b.fade*(month||0)/12); if(F&&F.cellFail) wh*=0.5; return wh;}
+function calc(){
+ const sc=find(SCEN,S.scen); if(!sc) return null;
+ const orb=sc.orbits.find(o=>o.id===S.orbit);
+ const p={};for(const k in PARTS) p[k]=find(PARTS[k],S.sel[k]);
+ p.power=agencyPanel(); // power comes from the agency's solar array, upgraded at HQ
+ const insts=INST.filter(i=>S.inst.has(i.id));
+ const L=find(LAUNCH,S.launch);
+ const food=find(FOOD,S.food)||FOOD[1];
+ const foodCost=food.c*sc.months;
+ const hw=['power','battery','storage','comms','adcs','engine'].map(k=>p[k]).filter(Boolean);
+ const base=hw.reduce((a,x)=>a+x.m,0)+insts.reduce((a,x)=>a+x.m,0);
+ const dry=base*(1+p.structure.frac);
+ const dv=orb?orb.dv:0; const isp=p.engine?p.engine.isp:0;
+ const engineMissingReq=!!(p.engine&&p.engine.needs&&S.sel.battery!==p.engine.needs);
+ let prop=0,engineOk=true;
+ if(dv>0){ if(isp>0&&!engineMissingReq) prop=dry*(Math.exp(dv/(isp*9.81))-1); else engineOk=false; }
+ const wet=dry+prop;
+ const delay=(engineOk&&p.engine&&p.engine.slow&&dv>0)?Math.ceil(dv/p.engine.slow):0;
+ const dest=orb?orb.dest:null; const cap=(L&&dest)?L.cap[dest]:null;
+ const fees=p.engine&&p.engine.fee?p.engine.fee:0;
+ const cost=hw.reduce((a,x)=>a+x.c,0)+insts.reduce((a,x)=>a+x.c,0)+p.structure.c+fees+(L?L.c:0)+sc.ops*sc.months+foodCost;
+ const commsAvg=p.comms?p.comms.p*0.25:0; // radios only transmit during ground passes
+ const load=(p.storage?p.storage.p:0)+commsAvg+(p.adcs?p.adcs.p:0)+(p.engine&&p.engine.pw?p.engine.pw:0)+insts.reduce((a,x)=>a+x.p,0)*DUTY+sc.heater;
+ const rtg=p.battery&&p.battery.rtg?p.battery.rtg:0;
+ const solar=p.power?p.power.gen:0;
+ const gen=solar*(1-(orb?orb.ecl:0))+rtg;
+ const margin=load>0?(gen-load)/load:0;
+ const eclH=orb?orb.eclH:0;
+ const battNeed=Math.max(0,load-rtg)*eclH;
+ const battHave=p.battery?p.battery.wh*0.8:0;
+ const cov=orb?orb.sci:0;
+ const dm=p.storage?p.storage.dm:1;
+ const dataGen=insts.reduce((a,x)=>a+x.data,0)*cov*dm;
+ const pointLoss=p.comms&&p.comms.point&&p.adcs&&!p.adcs.fine;
+ const rate=(p.comms&&orb)?p.comms.rate*orb.dist*(pointLoss?0.2:1):0;
+ const dataDown=orb?rate*orb.contact*3.6:0;
+ const storeGb=p.storage?p.storage.cap*8:0;
+ const storeFrac=dataGen>0?Math.min(1,storeGb/(3*dataGen)):1; // must hold ~3 days of data between good passes
+ const linkFrac=dataGen>0?Math.min(1,dataDown/dataGen):0;
+ const dataFrac=linkFrac*storeFrac;
+ let sciRaw=0; const instNotes=[];
+ for(const i of insts){
+  const match=i.tags.some(t=>sc.tags.includes(t));
+  let v=i.sci*(match?1:0.3);
+  const blur=i.fine&&p.adcs&&!p.adcs.fine; if(blur) v*=0.4;
+  const pen=i.pen&&i.pen[sc.id]?i.pen[sc.id]:1; v*=pen;
+  sciRaw+=v; instNotes.push({i,match,blur,pen});
+ }
+ const dayShare=sciRaw?instNotes.filter(n=>n.i.day).reduce((a,n)=>a+n.i.sci*(n.match?1:0.3)*(n.blur?0.4:1)*n.pen,0)/sciRaw:0;
+ const cloudLoss=dayShare*cloudAvg(sc.id)*((p.storage&&p.storage.cloud)?0.15:0.4);
+ const sciExpected=sciRaw*cov*(0.25+0.75*dataFrac)*food.sci*(1-cloudLoss);
+ const radNeed=orb?orb.radM:1, radHave=p.storage?p.storage.rad:0;
+ const cloudMask=!!(p.storage&&p.storage.cloud);
+ let o={sc,orb,p,insts,L,dry,wet,prop,dv,engineOk,engineMissingReq,delay,cap,dest,cost,fees,load,gen,rtg,margin,battNeed,battHave,eclH,
+  cloudLoss,dataGen,dataDown,dataFrac,linkFrac,storeFrac,storeGb,rate,pointLoss,sciRaw,sciExpected,food,foodCost,radNeed,radHave,instNotes,cov,cloudMask,dm};
+ if(S.creative){ // no limits: unlimited power, battery, mass, data and radiation shielding
+  o.gen=Math.max(o.gen,o.load*1.3); o.margin=(o.gen-o.load)/o.load; o.battHave=Math.max(o.battHave,o.battNeed*2+1);
+  if(o.cap!==null) o.cap=Math.max(o.cap,o.wet*1.2); o.engineOk=true; o.engineMissingReq=false;
+  o.dataFrac=o.linkFrac=o.storeFrac=1; o.radHave=Math.max(o.radHave,o.radNeed); o.pointLoss=false;
+  const cloudOff=S.acc.level===0||S.acc.off.cloud; if(cloudOff) o.cloudLoss=0;
+  // creative: every detector is worth its full science, from any orbit
+  o.cov=1; o.sciRaw=insts.reduce((a,i)=>a+i.sci,0); o.instNotes.forEach(n=>{n.match=true;n.blur=false;n.pen=1;});
+  o.sciExpected=o.sciRaw*food.sci*(1-o.cloudLoss);
+ }
+ return o;
+}
+function checks(c){
+ const out=[]; if(!c) return out;
+ const add=(lvl,txt,why,hard)=>out.push({lvl,txt,why,hard:!!hard});
+ const {sc,p}=c;
+ for(const [k,lab] of [['power','solar panel choice'],['battery','battery'],['storage','data storage & processing unit'],['comms','transmitter'],['adcs','attitude control']])
+  if(!p[k]) add('bad','No '+lab+' selected','Every spacecraft needs one.');
+ if(!c.insts.length) add('bad','No methane detectors','A mission with no detectors returns no data.');
+ if(!c.orb) add('bad','No orbit chosen','Pick where the spacecraft will operate.');
+ if(!c.L) add('bad','No launch chosen','The spacecraft has to get off the ground somehow.');
+ if(S.creative) add('info',`Creative mode: no budget (this design would cost ${money(c.cost)})`,'Money, power, mass, and data limits are turned off. Switch to Campaign to play for real.');
+ else if(c.cost>A.funds) add('bad',`Can't afford it: ${money(c.cost)} cost, ${money(A.funds)} in the bank`,'Your agency can only spend money it has. Cut costs, or fly cheaper missions first to earn more funding.',true);
+ else add('ok',`Cost ${money(c.cost)}, leaving ${money(A.funds-c.cost)} in the treasury`,'Whatever you don\'t spend stays in the bank.');
+ if(c.fees) add('info',`${p.engine.name} adds a ${money(c.fees)} fuel/handling fee`,'Included in the cost.');
+ if(c.engineMissingReq) add('bad',`${p.engine.name} needs a Space-Grade VES battery`,'Without it, the thruster can\'t fire, so you\'ll be stuck in the drop-off orbit.');
+ else if(!c.engineOk) add('bad',`This orbit needs a ${fmt(c.dv)} m/s burn, but there's no thruster`,'You can still launch, but you\'ll be stuck in the rocket\'s drop-off orbit and lose most of your science.');
+ if(c.delay) add('warn',`Electric propulsion: ${c.delay} month${c.delay>1?'s':''} to spiral up to the orbit`,'Gentle electric thrust saves fuel but takes time. No science during the transfer.');
+ if(c.L&&c.orb){
+  if(c.wet>c.cap) add('bad',`Too heavy: ${kg(c.wet)} on a launch slot that takes ${kg(c.cap)}`,'You can still launch, but you\'ll end up in the wrong orbit and lose most of your science. Low-efficiency thrusters need lots of fuel, and fuel is mass.');
+  else{const mm=(c.cap-c.wet)/c.cap; add(mm<0.1?'warn':'ok',`Launch mass ${kg(c.wet)} of ${kg(c.cap)} (${fmt(mm*100)}% margin)`,'Engineers keep about 10% mass margin because spacecraft always get heavier during development.');}
+ }
+ if(p.power){
+  if(c.margin<0) add('bad',`Power deficit: ${fmt(c.gen,1)} W made, ${fmt(c.load,1)} W used`,'If the spacecraft uses more power than it makes, it browns out. Buy a bigger solar array at HQ, or use fewer or lower-power parts.');
+  else if(c.margin<0.1) add('warn',`Thin power margin: ${fmt(c.margin*100)}%`,'Solar panels wear down over time. Aim for a 10–30% margin.');
+  else add('ok',`Power: ${fmt(c.gen,1)} W made, ${fmt(c.load,1)} W used (+${fmt(c.margin*100)}%)`,'Average power, counting time in Earth\'s shadow. Detectors count for the 50% of the time they\'re observing, and radios for the 25% of the time they transmit.');
+ }
+ if(p.battery){
+  if(p.battery.rtg) add('ok','RTG: constant 100 W, eclipses don\'t matter','Nuclear power works in the dark and the cold.');
+  else if(c.eclH>0){
+   if(c.battHave<c.battNeed) add('warn',`The battery can't last through the ${fmt(c.eclH,1)} h shadow (needs ${fmt(c.battNeed)} Wh, has ${fmt(c.battHave)})`,'In shadow, solar panels make nothing.');
+   else add('ok',`Battery covers the ${fmt(c.eclH,1)} h shadow`,'You only use 80% of the battery so it lasts longer.');
+   if(p.battery.dod&&c.battNeed>p.battery.wh*p.battery.dod) add('warn',`${p.battery.name}: discharging below ${p.battery.dod*100}% wears it out early`,'Deep discharges every orbit shorten battery life.');
+  }
+  if(p.battery.fade&&sc.months>12) add('warn',`${p.battery.name} fades over a ${sc.months}-month mission`,'NiCd cells lose about 40% of their capacity per year in orbit.');
+  if(p.battery.risk) add('warn',`${p.battery.name}: 15% chance of a cell failure in orbit`,'Experimental technology means high risk and high reward.');
+ }
+ if(p.comms&&c.insts.length&&c.orb){
+  if(c.pointLoss) add('warn',`${p.comms.name} needs precise pointing`,'With coarse magnetorquers, the dish misses the ground station and you get only about 20% of the data rate.');
+  if(c.linkFrac<0.5) add('warn',`Data bottleneck: you collect ${fmt(c.dataGen,1)} Gb/day but can send only ${fmt(c.dataDown,2)} Gb/day`,'Use a faster transmitter, or onboard processing to shrink the data.');
+  else add('ok',`Downlink: ${fmt(Math.min(100,c.linkFrac*100))}% of the data reaches the ground`,`${c.rate<1?fmt(c.rate*1000,1)+' kbps':fmt(c.rate)+' Mbps'} link, ${c.orb.contact} h of ground contact per day.`);
+  if(c.storeFrac<1) add('warn',`Storage too small: ${fmt(c.storeGb/8)} GB holds only ${fmt(c.storeGb/c.dataGen,1)} days of data`,'You need to buffer about 3 days between good ground passes, or the overflow gets overwritten.');
+  if(p.comms.wx==='rain') add('info','Ka-band suffers rain fade','Storms over the ground station will interrupt downlinks.');
+  if(p.comms.wx==='cloud') add('info','Laser downlink is blocked by clouds','Cloud over the optical ground station stops downlinks.');
+ }
+ for(const n of c.instNotes) if(n.blur) add('warn',`${n.i.name} needs fine pointing`,'With coarse pointing, it misses its targets and returns about 40% of its value.');
+ for(const n of c.instNotes) if(!n.match) add('warn',`${n.i.name} doesn't fit this mission`,c.sc.id==='arctic'&&n.i.day?'Sunlight-based sensors are blind during the polar night.':'Detectors that aren\'t tied to the mission goal are worth only 30%.');
+ for(const n of c.instNotes) if(n.pen<1) add('warn',`${n.i.name} loses accuracy over frozen tundra`,`Works at ${fmt(n.pen*100)}% for this mission.`);
+ if(c.radHave<c.radNeed) add('warn',`Radiation exposure ${fmt(c.radNeed,1)} vs. protection ${fmt(c.radHave,1)} (${p.storage?p.storage.name:'no storage'})`,'Unshielded memory gets bit flips from cosmic rays. Use radiation-tolerant storage, especially for high orbits.');
+ if(c.cloudLoss>0.005) add('info',`Clouds will cost you about ${fmt(c.cloudLoss*100)}% of your science`,`NASA POWER says your targets (${siteNames(sc.id)}) are cloudy ${fmt(cloudAvg(sc.id)*100)}% of the time.${c.cloudMask?' Your cloud mask cuts the loss.':''}`);
+ if(!c.cloudMask&&c.insts.some(i=>i.day)) add('warn','No onboard cloud masking','Sunlight-based detectors can\'t see through clouds. The SpaceCube v3.0 or Unibap processors can screen them out.');
+ if(c.orb&&c.insts.length) add('info',`Expected science: ${fmt(c.sciExpected)} / goal ${sc.target}`,'This depends on your detectors, how well the orbit covers the target, and how much data gets home.');
+ return out;
+}
+
+// ===================== NASA DATA (embedded; fetched 2026-11-14) =====================
+// NASA POWER (power.larc.nasa.gov) monthly climatology: CLOUD_AMT (%), ALLSKY_SFC_SW_DWN (kWh/m²/day), T2M (°C)
+const NASA_POWER={"pilot":[{"name":"Permian Basin, TX","lat":32.0,"lon":-102.5,"cloud":[41.2,46.4,44.6,36.6,38.3,33.7,37.6,37.3,38.0,34.5,36.3,43.0],"sun":[3.52,4.34,5.59,6.93,7.39,7.86,7.38,6.83,5.62,4.71,3.7,3.15],"t2m":[6.1,8.5,13.8,18.7,23.6,28.1,28.6,28.3,24.1,18.3,11.4,6.4]}],"hunter":[{"name":"Permian Basin, TX","lat":32.0,"lon":-102.5,"cloud":[41.2,46.4,44.6,36.6,38.3,33.7,37.6,37.3,38.0,34.5,36.3,43.0],"sun":[3.52,4.34,5.59,6.93,7.39,7.86,7.38,6.83,5.62,4.71,3.7,3.15],"t2m":[6.1,8.5,13.8,18.7,23.6,28.1,28.6,28.3,24.1,18.3,11.4,6.4]},{"name":"Turkmenistan gas fields","lat":38.5,"lon":54.0,"cloud":[57.0,56.7,58.8,60.0,48.5,34.6,39.5,32.6,28.4,41.1,53.1,54.7],"sun":[2.39,3.22,4.31,5.35,6.81,7.64,7.15,6.58,5.5,3.95,2.7,2.13],"t2m":[6.0,6.5,10.6,15.2,21.6,26.5,29.7,29.8,25.3,18.8,12.0,7.3]},{"name":"Hassi R'Mel, Algeria","lat":32.9,"lon":3.3,"cloud":[23.2,25.1,26.4,28.5,29.2,20.9,22.9,25.0,33.5,28.6,25.2,24.5],"sun":[3.71,4.7,5.87,6.9,7.54,8.0,7.84,7.14,5.92,4.89,3.86,3.34],"t2m":[7.1,8.8,13.2,17.7,22.7,28.2,32.2,31.1,25.9,20.0,12.3,8.0]},{"name":"Yamal gas fields, Russia","lat":68.0,"lon":72.0,"cloud":[63.4,69.2,68.9,73.2,80.6,74.4,64.7,76.1,79.3,85.1,70.3,65.5],"sun":[0.02,0.37,1.99,3.76,5.36,5.42,4.98,3.11,1.64,0.54,0.07,0.0],"t2m":[-23.1,-22.3,-15.2,-8.6,-2.2,7.9,12.3,9.4,4.0,-4.8,-15.7,-20.0]},{"name":"Alberta oil sands, Canada","lat":56.7,"lon":-111.4,"cloud":[66.5,66.2,66.6,67.9,63.0,69.9,65.8,66.4,63.8,70.9,76.5,68.7],"sun":[0.69,1.65,3.18,4.51,5.57,5.62,5.42,4.42,3.08,1.62,0.71,0.45],"t2m":[-17.1,-15.7,-9.1,0.7,9.0,14.3,16.8,14.9,9.0,1.0,-8.3,-15.6]},{"name":"Bordo Poniente landfill, Mexico","lat":19.45,"lon":-99.0,"cloud":[32.9,30.5,33.1,41.6,52.0,65.2,67.2,66.3,71.8,51.8,35.7,29.4],"sun":[4.91,5.7,6.4,6.59,6.31,5.74,5.67,5.67,4.96,5.11,4.93,4.8],"t2m":[10.2,12.1,13.9,16.3,17.0,15.9,14.8,14.5,13.9,12.8,11.3,10.7]}],"mapper":[{"name":"Amazon floodplain","lat":-3.0,"lon":-60.0,"cloud":[81.9,84.9,86.6,85.7,80.7,65.4,58.7,55.7,65.8,77.2,81.1,81.8],"sun":[4.41,4.36,4.35,4.23,4.18,4.59,4.92,5.35,5.4,5.1,4.66,4.28],"t2m":[26.5,26.2,26.2,26.1,26.2,26.0,26.3,27.6,28.9,29.2,28.4,27.1]},{"name":"Congo Basin peatlands","lat":0.5,"lon":18.0,"cloud":[62.4,71.4,69.7,72.4,69.1,68.3,66.2,69.3,71.3,75.5,74.0,68.0],"sun":[5.25,5.17,5.19,5.04,4.75,4.18,4.03,4.18,4.6,4.68,4.63,4.79],"t2m":[27.2,27.4,26.7,26.4,26.6,26.5,26.4,26.1,25.8,25.7,25.8,26.2]},{"name":"Hudson Bay Lowlands","lat":54.0,"lon":-85.0,"cloud":[58.5,57.0,63.0,62.4,69.8,61.8,64.6,68.5,72.7,78.4,76.1,64.1],"sun":[1.05,2.24,3.87,5.41,5.52,5.74,5.22,4.11,2.78,1.56,0.79,0.64],"t2m":[-23.8,-22.2,-14.4,-5.7,4.0,10.8,14.5,13.2,8.2,1.0,-8.6,-19.4]},{"name":"Sudd wetland, South Sudan","lat":7.5,"lon":30.5,"cloud":[59.0,63.5,75.4,72.6,73.4,73.8,77.0,79.0,71.7,68.3,49.3,41.1],"sun":[5.8,5.98,5.98,5.85,5.39,4.97,4.77,4.94,5.35,5.43,5.46,5.69],"t2m":[29.4,31.4,32.6,31.8,29.3,27.6,26.7,26.3,27.0,27.8,28.7,29.0]},{"name":"Bangladesh rice paddies","lat":23.7,"lon":90.4,"cloud":[29.8,27.5,42.6,61.3,72.9,89.1,92.6,90.8,84.7,54.8,24.1,27.8],"sun":[3.62,4.6,5.29,5.5,5.24,4.44,4.38,4.55,4.33,4.39,4.21,3.52],"t2m":[17.7,21.8,26.8,29.6,29.6,28.8,28.3,28.2,27.8,26.3,22.7,18.9]}],"arctic":[{"name":"Alaska North Slope","lat":70.2,"lon":-151.0,"cloud":[58.4,64.3,64.3,71.7,80.2,71.8,74.7,85.2,87.0,88.7,76.5,64.1],"sun":[0.01,0.34,2.04,4.38,5.74,5.95,4.94,2.82,1.44,0.41,0.03,0.0],"t2m":[-25.7,-23.9,-21.8,-12.2,-1.8,7.5,10.3,7.1,1.8,-6.9,-17.6,-22.9]},{"name":"Lena Delta, Siberia","lat":72.5,"lon":126.5,"cloud":[41.1,45.6,55.8,65.0,80.3,77.4,76.9,77.8,81.1,79.5,55.6,45.2],"sun":[0.0,0.17,1.61,3.95,5.11,5.14,4.36,2.8,1.38,0.34,0.01,0.0],"t2m":[-32.9,-32.8,-24.0,-13.7,-4.0,6.5,9.2,8.0,1.2,-12.2,-24.7,-31.7]},{"name":"Mackenzie Delta, Canada","lat":68.5,"lon":-134.5,"cloud":[55.6,59.7,55.2,63.0,67.5,61.2,74.5,77.0,78.2,81.2,68.8,60.0],"sun":[0.03,0.53,2.17,4.41,5.43,6.02,4.75,3.19,1.78,0.59,0.07,0.0],"t2m":[-25.6,-24.2,-21.5,-10.5,1.7,11.1,13.5,10.3,3.6,-7.1,-19.4,-24.2]}],"geo":[{"name":"Permian Basin, TX","lat":32.0,"lon":-102.5,"cloud":[41.2,46.4,44.6,36.6,38.3,33.7,37.6,37.3,38.0,34.5,36.3,43.0],"sun":[3.52,4.34,5.59,6.93,7.39,7.86,7.38,6.83,5.62,4.71,3.7,3.15],"t2m":[6.1,8.5,13.8,18.7,23.6,28.1,28.6,28.3,24.1,18.3,11.4,6.4]},{"name":"Marcellus Shale, PA","lat":41.5,"lon":-77.0,"cloud":[73.7,71.2,68.3,65.6,66.3,61.1,56.0,57.1,56.2,65.0,68.5,77.2],"sun":[1.66,2.48,3.5,4.59,5.29,5.84,5.89,5.12,4.09,2.74,1.89,1.33],"t2m":[-5.3,-4.4,0.3,7.0,13.6,18.3,21.1,20.4,16.7,9.6,3.2,-2.2]},{"name":"Alberta oil sands, Canada","lat":56.7,"lon":-111.4,"cloud":[66.5,66.2,66.6,67.9,63.0,69.9,65.8,66.4,63.8,70.9,76.5,68.7],"sun":[0.69,1.65,3.18,4.51,5.57,5.62,5.42,4.42,3.08,1.62,0.71,0.45],"t2m":[-17.1,-15.7,-9.1,0.7,9.0,14.3,16.8,14.9,9.0,1.0,-8.3,-15.6]},{"name":"Amazon floodplain","lat":-3.0,"lon":-60.0,"cloud":[81.9,84.9,86.6,85.7,80.7,65.4,58.7,55.7,65.8,77.2,81.1,81.8],"sun":[4.41,4.36,4.35,4.23,4.18,4.59,4.92,5.35,5.4,5.1,4.66,4.28],"t2m":[26.5,26.2,26.2,26.1,26.2,26.0,26.3,27.6,28.9,29.2,28.4,27.1]},{"name":"Vaca Muerta, Argentina","lat":-38.5,"lon":-69.0,"cloud":[26.4,28.3,31.2,42.4,57.8,59.4,58.9,56.4,49.1,49.6,40.8,33.2],"sun":[8.48,7.3,5.74,3.89,2.43,1.96,2.21,3.15,4.68,6.12,7.76,8.56],"t2m":[23.6,22.5,19.2,13.8,9.2,6.0,5.2,7.3,10.5,14.3,18.4,21.6]}]};
+// NASA OMNI (SPDF CDAWeb, OMNI2_H0_MRG1HR KP1800): days per month with Kp ≥ 5 (geomagnetic storm), Jan 2015 – Oct 2025
+const NASA_KP=[["2015-01",3],["2015-02",5],["2015-03",6],["2015-04",4],["2015-05",4],["2015-06",4],["2015-07",4],["2015-08",6],["2015-09",5],["2015-10",4],["2015-11",6],["2015-12",5],["2016-01",2],["2016-02",4],["2016-03",5],["2016-04",4],["2016-05",3],["2016-06",3],["2016-07",2],["2016-08",4],["2016-09",7],["2016-10",7],["2016-11",1],["2016-12",1],["2017-01",0],["2017-02",1],["2017-03",6],["2017-04",4],["2017-05",2],["2017-06",2],["2017-07",3],["2017-08",2],["2017-09",9],["2017-10",4],["2017-11",3],["2017-12",1],["2018-01",0],["2018-02",1],["2018-03",1],["2018-04",1],["2018-05",2],["2018-06",1],["2018-07",0],["2018-08",2],["2018-09",2],["2018-10",1],["2018-11",2],["2018-12",0],["2019-01",2],["2019-02",0],["2019-03",0],["2019-04",0],["2019-05",2],["2019-06",1],["2019-07",1],["2019-08",2],["2019-09",3],["2019-10",1],["2019-11",0],["2019-12",0],["2020-01",0],["2020-02",0],["2020-03",0],["2020-04",0],["2020-05",0],["2020-06",0],["2020-07",0],["2020-08",0],["2020-09",3],["2020-10",0],["2020-11",0],["2020-12",0],["2021-01",0],["2021-02",0],["2021-03",5],["2021-04",2],["2021-05",2],["2021-06",1],["2021-07",0],["2021-08",1],["2021-09",1],["2021-10",1],["2021-11",3],["2021-12",1],["2022-01",4],["2022-02",3],["2022-03",3],["2022-04",4],["2022-05",2],["2022-06",0],["2022-07",4],["2022-08",5],["2022-09",4],["2022-10",2],["2022-11",4],["2022-12",1],["2023-01",1],["2023-02",5],["2023-03",4],["2023-04",2],["2023-05",5],["2023-06",3],["2023-07",0],["2023-08",1],["2023-09",8],["2023-10",2],["2023-11",6],["2023-12",4],["2024-01",0],["2024-02",0],["2024-03",4],["2024-04",3],["2024-05",8],["2024-06",2],["2024-07",2],["2024-08",6],["2024-09",3],["2024-10",5],["2024-11",2],["2024-12",1],["2025-01",2],["2025-02",4],["2025-03",8],["2025-04",6],["2025-05",4],["2025-06",9],["2025-07",2],["2025-08",2],["2025-09",7],["2025-10",7]];
+// NASA EMIT L2B CH4 plume complexes (EMITL2BCH4PLM v002, doi:10.5067/EMIT/EMITL2BCH4PLM.002) via CMR: [lat, lon, yyyymmdd]
+const NASA_EMIT=[[31.123,35.208,"20220810"],[31.906,36.23,"20220810"],[35.28,40.508,"20220810"],[35.3,40.461,"20220810"],[22.339,56.406,"20220811"],[34.893,41.148,"20220814"],[39.496,53.535,"20220815"],[39.389,53.595,"20220815"],[39.35,53.868,"20220815"],[49.9,72.219,"20220815"],[50.231,72.906,"20220815"],[28.791,20.868,"20220815"],[45.997,72.705,"20220816"],[40.244,58.436,"20220816"],[39.662,60.194,"20220816"],[36.16,41.074,"20220816"],[50.229,72.669,"20220817"],[50.232,72.904,"20220817"],[45.349,55.182,"20220817"],[46.545,64.649,"20220818"],[44.036,87.875,"20220818"],[41.099,69.492,"20220818"],[31.929,36.198,"20220818"],[36.225,59.972,"20220819"],[29.245,21.547,"20220819"],[39.095,109.477,"20220820"],[40.035,61.041,"20220820"],[40.116,60.739,"20220820"],[36.962,42.131,"20220820"],[31.232,48.964,"20220820"],[28.646,52.043,"20220820"],[15.586,46.047,"20220821"],[15.556,45.823,"20220821"],[41.626,69.54,"20220822"],[31.934,36.211,"20220822"],[36.157,61.523,"20220823"],[36.206,61.578,"20220823"],[35.833,61.949,"20220823"],[35.974,61.919,"20220823"],[37.764,53.927,"20220826"],[37.925,53.896,"20220826"],[37.902,53.869,"20220826"],[37.891,53.908,"20220826"],[33.345,36.422,"20220826"],[32.37,-104.088,"20220826"],[32.244,-104.055,"20220826"],[37.336,60.49,"20220827"],[36.418,61.543,"20220827"],[36.396,61.574,"20220827"],[36.467,61.46,"20220827"],[36.367,61.561,"20220827"],[36.429,61.724,"20220827"],[36.485,61.627,"20220827"],[36.619,61.651,"20220827"],[36.383,61.92,"20220827"],[36.989,37.406,"20220827"],[28.119,0.317,"20220827"],[39.94,61.637,"20220828"],[40.039,62.586,"20220828"],[39.923,62.332,"20220828"],[39.112,63.263,"20220828"],[39.015,64.071,"20220828"],[39.009,64.092,"20220828"],[38.607,64.729,"20220828"],[38.641,64.542,"20220828"],[36.982,42.828,"20220828"],[36.175,43.903,"20220828"],[30.064,51.549,"20220828"],[28.479,53.411,"20220828"],[29.595,28.61,"20220828"],[29.69,28.613,"20220828"],[29.549,28.537,"20220828"],[29.519,28.434,"20220828"],[29.553,28.515,"20220828"],[35.475,51.312,"20220829"],[27.333,60.27,"20220829"],[27.256,60.677,"20220829"],[36.381,-114.856,"20220829"],[33.28,36.427,"20220830"],[29.198,47.939,"20220831"],[29.05,47.593,"20220831"],[27.049,49.367,"20220831"],[38.263,66.014,"20220901"],[38.561,65.95,"20220901"],[38.52,66.002,"20220901"],[38.57,65.928,"20220901"],[38.549,66.005,"20220901"],[38.543,65.921,"20220901"],[38.495,65.985,"20220901"],[38.542,66.019,"20220901"],[38.325,66.062,"20220901"],[38.546,65.884,"20220901"],[38.524,65.88,"20220901"],[38.503,66.01,"20220901"],[35.486,45.465,"20220901"],[35.177,47.014,"20220901"],[29.726,53.277,"20220901"],[28.78,7.148,"20220901"],[24.474,46.984,"20220903"],[28.176,19.896,"20220903"],[22.693,24.67,"20220903"],[22.962,1.093,"20220903"],[-25.46,28.121,"20220909"],[-26.464,29.286,"20220909"],[-26.258,29.119,"20220909"],[-26.214,29.105,"20220909"],[-34.237,-70.709,"20230107"],[-32.948,-70.782,"20230111"],[-36.367,-67.073,"20230111"],[-22.982,148.572,"20230119"],[-22.98,148.696,"20230119"],[-36.367,-67.074,"20230121"],[-34.513,-58.595,"20230122"],[24.636,91.594,"20230123"],[-32.687,151.076,"20230125"],[-32.465,151.076,"20230125"],[13.572,100.66,"20230126"],[28.121,18.795,"20230126"],[-11.804,-77.057,"20230127"],[-11.926,-77.108,"20230127"],[28.615,7.248,"20230128"],[28.48,7.518,"20230128"],[28.654,7.684,"20230128"],[22.869,55.617,"20230129"],[-38.764,-68.204,"20230129"],[-38.058,-67.826,"20230129"],[35.458,51.343,"20230130"],[25.88,-100.318,"20230130"],[26.793,94.685,"20230131"],[27.303,95.308,"20230131"],[37.169,106.755,"20230131"],[38.174,108.348,"20230131"],[37.847,108.595,"20230131"],[37.48,61.025,"20230131"],[15.481,44.144,"20230201"],[22.155,56.03,"20230202"],[21.877,55.985,"20230202"],[41.971,-108.293,"20230202"],[28.959,69.055,"20230203"],[38.657,80.475,"20230203"],[38.653,80.49,"20230203"],[34.125,-90.646,"20230203"],[38.936,111.109,"20230204"],[46.103,125.257,"20230204"],[24.597,46.775,"20230204"],[36.244,59.998,"20230204"],[37.497,61.053,"20230204"],[29.689,28.431,"20230204"],[30.745,29.431,"20230204"],[32.085,-104.49,"20230205"],[32.311,-104.054,"20230205"],[32.211,-104.007,"20230205"],[32.442,-104.073,"20230205"],[32.151,-103.994,"20230205"],[32.579,-104.18,"20230205"],[32.325,-103.785,"20230205"],[32.15,-104.072,"20230205"],[30.412,-99.903,"20230206"],[36.996,105.27,"20230214"],[38.746,80.062,"20230214"],[27.039,69.721,"20230214"],[27.149,69.758,"20230214"],[25.912,71.574,"20230214"],[39.483,107.169,"20230215"],[27.751,52.162,"20230215"],[35.262,-97.992,"20230215"],[31.78,6.212,"20230216"],[31.668,6.193,"20230216"],[31.777,5.98,"20230216"],[31.742,5.99,"20230216"],[30.262,8.092,"20230216"],[44.032,87.85,"20230217"],[31.963,36.191,"20230217"],[35.389,-110.332,"20230217"],[27.816,-101.181,"20230217"],[28.413,69.904,"20230218"],[28.428,69.677,"20230218"],[27.966,69.81,"20230218"],[25.87,71.576,"20230218"],[34.703,38.655,"20230218"],[29.142,21.452,"20230218"],[29.248,21.543,"20230218"],[29.181,21.421,"20230218"],[35.328,-80.661,"20230218"],[40.796,83.677,"20230219"],[40.113,61.011,"20230219"],[38.57,62.728,"20230219"],[38.57,62.789,"20230219"],[37.952,63.477,"20230219"],[37.956,63.526,"20230219"],[37.945,63.494,"20230219"],[36.947,42.132,"20230219"],[35.413,44.202,"20230219"],[31.251,48.914,"20230219"],[31.236,48.993,"20230219"],[31.266,48.894,"20230219"],[31.126,49.329,"20230219"],[31.125,49.14,"20230219"],[30.319,49.921,"20230219"],[30.759,49.99,"20230219"],[30.937,49.911,"20230219"],[9.731,-73.503,"20230219"],[37.364,94.162,"20230220"],[37.348,94.162,"20230220"],[37.303,94.31,"20230220"],[43.992,58.678,"20230220"],[15.599,46.002,"20230220"],[15.592,46.017,"20230220"],[15.576,45.803,"20230220"],[15.545,45.772,"20230220"],[33.077,-112.295,"20230220"],[26.943,-105.724,"20230220"],[22.305,-100.935,"20230220"],[44.037,87.868,"20230221"],[42.182,69.483,"20230221"],[31.924,36.189,"20230221"],[31.926,36.198,"20230221"],[37.063,35.391,"20230222"],[41.806,81.302,"20230223"],[40.856,83.462,"20230223"],[39.998,60.933,"20230223"],[39.884,61.063,"20230223"],[39.824,61.732,"20230223"],[38.571,62.792,"20230223"],[38.618,62.827,"20230223"],[38.215,63.386,"20230223"],[38.362,63.28,"20230223"],[37.956,63.502,"20230223"],[37.993,63.542,"20230223"],[36.446,42.921,"20230223"],[36.32,43.073,"20230223"],[37.295,94.306,"20230224"],[37.309,94.295,"20230224"],[37.276,94.297,"20230224"],[37.374,94.17,"20230224"],[15.598,46.033,"20230224"],[15.544,45.854,"20230224"],[15.578,45.796,"20230224"],[40.255,-3.649,"20230224"],[32.118,-110.826,"20230224"],[32.121,-110.879,"20230224"],[19.459,-99.019,"20230224"],[19.405,-98.839,"20230224"],[19.338,-98.815,"20230224"],[18.993,-98.143,"20230224"],[14.05,99.965,"20230225"],[13.621,100.557,"20230225"],[13.579,100.669,"20230225"],[32.497,36.106,"20230225"],[31.874,36.217,"20230225"],[38.885,80.092,"20230226"],[38.851,80.007,"20230226"],[28.948,69.049,"20230226"],[9.549,-73.496,"20230227"],[9.732,-73.506,"20230227"],[-29.837,-64.404,"20230311"],[-32.023,141.425,"20230318"],[-46.658,-68.101,"20230323"],[26.755,83.223,"20230324"],[27.77,83.487,"20230324"],[35.485,51.304,"20230325"],[35.466,51.331,"20230325"],[28.097,19.254,"20230325"],[28.171,19.147,"20230325"],[28.197,19.924,"20230325"],[28.7,19.861,"20230325"],[36.809,5.88,"20230325"],[37.176,106.756,"20230326"],[39.09,109.478,"20230326"],[37.48,61.023,"20230326"],[31.701,5.973,"20230326"],[31.79,6.005,"20230326"],[31.772,5.947,"20230326"],[35.765,10.46,"20230326"],[40.546,117.751,"20230327"],[31.927,36.194,"20230327"],[34.862,38.866,"20230327"],[37.484,61.024,"20230330"],[39.614,64.589,"20230330"],[40.084,65.128,"20230330"],[31.589,5.924,"20230330"],[31.759,5.945,"20230330"],[31.776,6.21,"20230330"],[31.694,5.967,"20230330"],[31.763,5.988,"20230330"],[21.116,72.819,"20230331"],[32.597,13.351,"20230331"],[28.992,-108.536,"20230331"],[24.592,46.897,"20230403"],[30.066,51.56,"20230403"],[30.021,51.581,"20230403"],[36.242,59.984,"20230403"],[30.754,29.405,"20230403"],[31.468,5.858,"20230403"],[31.592,5.927,"20230403"],[31.698,5.969,"20230403"],[31.622,6.15,"20230403"],[31.621,5.828,"20230403"],[31.767,6.004,"20230403"],[31.782,6.216,"20230403"],[31.132,35.2,"20230404"],[32.032,36.153,"20230404"],[35.392,40.434,"20230404"],[35.351,40.369,"20230404"],[35.391,40.365,"20230404"],[35.314,40.433,"20230404"],[35.239,40.643,"20230404"],[36.169,41.084,"20230404"],[36.14,41.087,"20230404"],[21.877,55.985,"20230405"],[21.89,55.966,"20230405"],[21.942,56.018,"20230405"],[21.945,56.036,"20230405"],[33.558,44.248,"20230405"],[33.796,44.123,"20230405"],[31.615,35.224,"20230416"],[35.305,-111.095,"20230416"],[48.237,57.361,"20230417"],[39.456,53.774,"20230417"],[39.37,53.826,"20230417"],[39.495,53.587,"20230417"],[39.465,53.681,"20230417"],[39.359,53.782,"20230417"],[39.504,53.562,"20230417"],[39.332,54.012,"20230417"],[39.116,108.448,"20230418"],[37.649,110.894,"20230418"],[37.607,110.847,"20230418"],[37.428,110.879,"20230418"],[37.532,110.807,"20230418"],[37.499,110.829,"20230418"],[37.48,110.858,"20230418"],[37.446,110.866,"20230418"],[43.295,52.857,"20230418"],[43.39,52.814,"20230418"],[40.256,58.428,"20230418"],[39.686,60.239,"20230418"],[39.658,60.209,"20230418"],[38.406,61.653,"20230418"],[37.951,63.511,"20230418"],[39.859,-104.754,"20230418"],[39.912,65.9,"20230419"],[29.632,32.29,"20230419"],[28.916,9.748,"20230419"],[28.925,9.754,"20230419"],[44.027,87.854,"20230420"],[41.095,69.497,"20230420"],[31.927,36.246,"20230420"],[36.254,59.956,"20230421"],[27.941,69.809,"20230421"],[25.598,48.889,"20230421"],[33.81,-101.927,"20230421"],[40.058,61.035,"20230422"],[31.135,49.367,"20230422"],[30.707,49.865,"20230422"],[37.307,94.268,"20230423"],[37.362,94.159,"20230423"],[37.399,94.48,"20230423"],[45.324,55.191,"20230423"],[33.856,51.705,"20230423"],[15.525,45.774,"20230423"],[37.983,-1.292,"20230423"],[31.01,7.95,"20230423"],[33.079,-112.286,"20230423"],[43.99,87.864,"20230424"],[14.048,99.967,"20230424"],[31.903,36.231,"20230424"],[38.822,-90.023,"20230424"],[31.122,-103.586,"20230424"],[36.402,107.728,"20230425"],[36.298,107.841,"20230425"],[35.88,108.186,"20230425"],[36.148,108.024,"20230425"],[36.142,108.049,"20230425"],[36.278,107.794,"20230425"],[36.179,107.763,"20230425"],[36.082,107.651,"20230425"],[38.884,80.213,"20230425"],[36.397,61.313,"20230425"],[36.2,61.578,"20230425"],[36.022,61.589,"20230425"],[35.997,61.599,"20230425"],[35.126,38.402,"20230425"],[36.235,114.026,"20230426"],[40.012,60.823,"20230426"],[39.966,61.608,"20230426"],[36.166,43.864,"20230426"],[31.048,49.379,"20230426"],[32.397,-116.737,"20230426"],[32.378,-116.955,"20230426"],[35.786,50.806,"20230427"],[35.476,51.297,"20230427"],[35.464,51.322,"20230427"],[28.707,-106.037,"20230427"],[-16.272,-71.641,"20230427"],[39.788,97.882,"20230428"],[38.028,53.925,"20230428"],[37.786,53.998,"20230428"],[37.807,53.977,"20230428"],[37.491,54.067,"20230428"],[37.743,53.991,"20230428"],[37.946,53.943,"20230428"],[32.296,13.083,"20230428"],[32.604,13.331,"20230428"],[36.611,61.705,"20230429"],[36.581,61.791,"20230429"],[36.594,61.614,"20230429"],[36.354,61.514,"20230429"],[36.467,61.695,"20230429"],[36.412,61.521,"20230429"],[36.563,61.516,"20230429"],[36.45,61.543,"20230429"],[36.489,61.966,"20230429"],[36.297,61.88,"20230429"],[36.199,61.601,"20230429"],[36.099,62.495,"20230429"],[29.083,47.53,"20230429"],[30.04,51.561,"20230430"],[29.421,52.743,"20230430"],[29.604,28.623,"20230430"],[29.561,28.827,"20230430"],[29.551,28.549,"20230430"],[29.712,28.64,"20230430"],[34.448,-118.644,"20230430"],[26.971,67.516,"20230502"],[27.07,67.426,"20230502"],[25.785,68.667,"20230502"],[28.133,18.799,"20230502"],[-22.804,-47.222,"20230504"],[-23.417,-46.56,"20230504"],[-23.4,-46.813,"20230504"],[-23.666,-46.429,"20230504"],[31.772,5.99,"20230526"],[31.766,5.943,"20230526"],[31.801,5.9,"20230526"],[28.638,7.604,"20230527"],[38.747,80.063,"20230529"],[40.866,83.444,"20230529"],[29.249,21.562,"20230529"],[29.335,21.64,"20230529"],[29.277,21.377,"20230529"],[38.132,109.639,"20230530"],[30.054,51.566,"20230530"],[37.421,60.961,"20230530"],[37.467,61.019,"20230530"],[39.004,-78.366,"20230530"],[31.944,36.236,"20230531"],[35.05,40.7,"20230531"],[33.476,44.496,"20230601"],[39.993,54.283,"20230601"],[42.017,86.551,"20230602"],[30.265,47.359,"20230602"],[30.349,47.348,"20230602"],[28.987,51.951,"20230603"],[29.424,52.704,"20230603"],[36.572,61.483,"20230603"],[39.919,65.903,"20230603"],[29.562,28.823,"20230603"],[29.548,28.541,"20230603"],[29.568,28.626,"20230603"],[15.569,46.0,"20230604"],[31.795,-104.191,"20230604"],[31.818,-104.304,"20230604"],[32.309,-103.221,"20230604"],[33.064,-102.957,"20230604"],[39.37,53.794,"20230605"],[39.467,53.557,"20230605"],[39.342,54.009,"20230605"],[39.377,53.827,"20230605"],[39.52,53.761,"20230605"],[39.384,53.704,"20230605"],[26.317,67.446,"20230606"],[27.991,69.817,"20230606"],[31.321,49.116,"20230606"],[48.24,57.334,"20230606"],[30.899,1.85,"20230606"],[28.633,52.053,"20230607"],[28.684,52.428,"20230607"],[36.426,61.817,"20230607"],[36.53,61.526,"20230607"],[36.297,61.872,"20230607"],[36.342,61.567,"20230607"],[36.317,61.671,"20230607"],[36.556,61.646,"20230607"],[36.532,61.632,"20230607"],[36.474,61.639,"20230607"],[36.378,61.921,"20230607"],[36.509,61.935,"20230607"],[36.442,61.74,"20230607"],[36.275,61.835,"20230607"],[36.472,61.839,"20230607"],[39.169,65.299,"20230607"],[45.328,55.197,"20230607"],[29.486,6.52,"20230607"],[29.647,6.957,"20230607"],[29.63,6.756,"20230607"],[25.642,55.802,"20230608"],[25.286,55.448,"20230608"],[31.408,-103.322,"20230608"],[31.776,-103.492,"20230608"],[31.761,-103.514,"20230608"],[31.607,-103.64,"20230608"],[31.346,-103.362,"20230608"],[31.315,-103.23,"20230608"],[31.311,-103.204,"20230608"],[31.979,-103.084,"20230608"],[32.032,-102.513,"20230608"],[32.024,-102.611,"20230608"],[32.02,-102.524,"20230608"],[32.142,-102.474,"20230608"],[32.178,-102.508,"20230608"],[32.277,-102.447,"20230608"],[32.345,-101.71,"20230608"],[32.248,-101.956,"20230608"],[32.27,-101.773,"20230608"],[32.248,-101.9,"20230608"],[44.037,87.883,"20230609"],[28.581,17.329,"20230609"],[36.38,-114.864,"20230609"],[40.042,-108.777,"20230609"],[31.62,74.413,"20230610"],[30.953,49.927,"20230610"],[31.128,49.875,"20230610"],[30.966,49.83,"20230610"],[30.927,49.69,"20230610"],[30.432,49.865,"20230610"],[30.812,49.986,"20230610"],[30.616,49.906,"20230610"],[30.744,49.704,"20230610"],[30.313,49.935,"20230610"],[35.569,-109.717,"20230610"],[36.1,62.344,"20230611"],[38.269,66.024,"20230611"],[34.187,36.667,"20230611"],[37.321,94.268,"20230612"],[44.065,58.66,"20230612"],[41.251,-111.083,"20230612"],[41.353,-111.195,"20230612"],[40.224,58.43,"20230613"],[36.407,61.583,"20230613"],[36.408,61.483,"20230613"],[36.382,61.371,"20230613"],[36.416,61.549,"20230613"],[36.425,61.489,"20230613"],[36.524,61.578,"20230613"],[36.462,61.458,"20230613"],[36.59,61.61,"20230613"],[36.491,61.66,"20230613"],[40.794,61.292,"20230614"],[39.97,61.677,"20230614"],[40.227,62.341,"20230614"],[40.205,62.351,"20230614"],[40.24,62.454,"20230614"],[40.449,62.138,"20230614"],[39.262,64.109,"20230614"],[38.668,64.779,"20230614"],[38.74,64.639,"20230614"],[38.787,64.619,"20230614"],[47.758,-96.649,"20230614"],[24.602,46.904,"20230616"],[32.832,-103.735,"20230616"],[31.568,-101.917,"20230616"],[31.671,-101.882,"20230616"],[31.555,-101.882,"20230616"],[31.466,-101.838,"20230616"],[31.329,-101.788,"20230616"],[31.484,-101.657,"20230616"],[31.269,-101.693,"20230616"],[31.309,-101.613,"20230616"],[31.159,-101.301,"20230616"],[50.365,3.612,"20230617"],[25.96,86.799,"20230619"],[31.316,34.746,"20230619"],[39.343,53.888,"20230620"],[39.461,53.71,"20230620"],[39.48,53.718,"20230620"],[39.459,53.788,"20230620"],[39.452,53.618,"20230620"],[39.333,54.021,"20230620"],[39.469,53.662,"20230620"],[39.359,53.843,"20230620"],[39.454,53.634,"20230620"],[39.445,53.8,"20230620"],[39.434,53.609,"20230620"],[39.343,53.806,"20230620"],[39.355,53.777,"20230620"],[39.469,53.742,"20230620"],[39.48,53.688,"20230620"],[39.444,53.6,"20230620"],[39.489,53.765,"20230620"],[38.55,54.195,"20230620"],[38.756,54.247,"20230620"],[38.588,54.275,"20230620"],[38.666,54.319,"20230620"],[31.498,5.824,"20230622"],[37.876,-121.177,"20230622"],[37.956,-120.957,"20230622"],[48.216,57.351,"20230624"],[46.052,65.06,"20230624"],[37.432,110.85,"20230625"],[37.466,110.882,"20230625"],[43.424,52.424,"20230625"],[43.559,52.403,"20230625"],[43.408,52.486,"20230625"],[39.694,60.208,"20230625"],[39.681,60.206,"20230625"],[36.164,41.094,"20230625"],[36.142,41.083,"20230625"],[30.433,30.791,"20230626"],[31.667,5.799,"20230626"],[31.778,5.966,"20230626"],[31.729,6.139,"20230626"],[31.783,6.209,"20230626"],[28.088,9.796,"20230626"],[44.01,87.825,"20230627"],[41.112,69.485,"20230627"],[31.907,36.229,"20230627"],[31.894,36.253,"20230627"],[31.923,36.208,"20230627"],[36.235,59.99,"20230628"],[28.144,69.352,"20230628"],[27.878,69.838,"20230628"],[25.921,71.582,"20230628"],[36.245,-104.614,"20230628"],[39.213,108.401,"20230629"],[39.299,109.107,"20230629"],[39.079,109.051,"20230629"],[39.08,108.617,"20230629"],[38.377,110.035,"20230629"],[37.802,111.096,"20230629"],[40.08,60.928,"20230629"],[38.002,63.173,"20230629"],[38.679,63.099,"20230629"],[38.661,62.883,"20230629"],[37.925,63.226,"20230629"],[36.953,42.144,"20230629"],[35.296,44.407,"20230629"],[31.352,49.131,"20230629"],[31.224,49.281,"20230629"],[31.338,49.224,"20230629"],[30.979,49.585,"20230629"],[30.808,49.702,"20230629"],[31.146,49.327,"20230629"],[30.203,50.417,"20230629"],[30.79,49.973,"20230629"],[29.896,50.427,"20230629"],[30.197,50.362,"20230629"],[30.444,49.855,"20230629"],[30.078,50.618,"20230629"],[28.632,52.049,"20230629"],[25.03,55.623,"20230629"],[9.725,-73.509,"20230629"],[15.597,46.01,"20230630"],[-19.115,24.157,"20230630"],[33.083,-112.286,"20230630"],[-16.272,-71.634,"20230723"],[27.959,69.812,"20230725"],[30.264,47.774,"20230725"],[31.298,49.136,"20230725"],[30.964,49.594,"20230725"],[36.2,61.573,"20230726"],[36.44,61.479,"20230726"],[36.457,61.469,"20230726"],[38.657,64.783,"20230726"],[29.648,6.962,"20230726"],[38.624,54.333,"20230728"],[38.666,54.34,"20230728"],[38.832,54.301,"20230728"],[38.478,54.225,"20230728"],[38.503,54.207,"20230728"],[30.962,49.607,"20230729"],[30.753,49.896,"20230729"],[31.006,49.973,"20230729"],[30.746,49.848,"20230729"],[40.211,62.361,"20230729"],[39.969,61.685,"20230729"],[40.076,62.529,"20230729"],[32.193,3.607,"20230729"],[36.731,10.067,"20230729"],[33.677,-112.464,"20230729"],[29.063,53.328,"20230730"],[29.786,31.362,"20230730"],[29.625,6.965,"20230730"],[29.647,6.977,"20230730"],[37.352,94.147,"20230731"],[31.906,-8.081,"20230731"],[34.002,-4.919,"20230731"],[31.339,-103.186,"20230731"],[30.993,-102.976,"20230731"],[31.459,-103.056,"20230731"],[31.977,-101.701,"20230731"],[32.022,-102.501,"20230731"],[32.092,-101.741,"20230731"],[31.859,-101.776,"20230731"],[32.406,-101.931,"20230731"],[32.53,-101.526,"20230731"],[32.375,-101.334,"20230731"],[32.328,-101.456,"20230731"],[38.295,54.119,"20230801"],[37.919,53.922,"20230801"],[37.895,53.924,"20230801"],[38.218,54.099,"20230801"],[38.615,54.361,"20230801"],[38.654,54.379,"20230801"],[38.437,54.351,"20230801"],[38.833,54.35,"20230801"],[29.605,48.837,"20230802"],[29.608,48.873,"20230802"],[30.454,49.891,"20230802"],[30.841,50.704,"20230802"],[30.78,50.02,"20230802"],[40.069,62.525,"20230802"],[36.719,10.085,"20230802"],[49.9,72.22,"20230803"],[40.871,23.083,"20230803"],[40.347,99.066,"20230804"],[35.407,44.218,"20230804"],[44.043,58.708,"20230804"],[33.98,-4.943,"20230804"],[31.491,-101.835,"20230804"],[31.577,-101.82,"20230804"],[31.686,-101.994,"20230804"],[31.604,-101.04,"20230804"],[41.84,84.308,"20230805"],[35.467,51.309,"20230805"],[35.799,50.783,"20230805"],[40.243,58.451,"20230805"],[28.478,19.515,"20230805"],[28.799,19.806,"20230805"],[29.709,19.883,"20230805"],[39.116,109.702,"20230806"],[39.319,109.154,"20230806"],[42.115,114.663,"20230806"],[38.409,61.668,"20230806"],[31.609,35.242,"20230807"],[31.297,34.755,"20230807"],[34.863,38.865,"20230807"],[28.636,7.609,"20230807"],[28.646,7.662,"20230807"],[38.907,80.126,"20230809"],[35.266,51.581,"20230809"],[40.242,58.468,"20230809"],[28.197,19.908,"20230809"],[28.025,19.903,"20230809"],[28.894,20.958,"20230809"],[32.41,-116.745,"20230809"],[37.475,61.033,"20230810"],[38.412,61.669,"20230810"],[38.627,63.05,"20230810"],[38.609,63.047,"20230810"],[45.308,52.358,"20230810"],[51.313,71.829,"20230814"],[46.85,48.42,"20230814"],[45.356,52.369,"20230814"],[40.794,61.285,"20230814"],[39.226,64.666,"20230814"],[38.802,64.633,"20230814"],[39.224,65.321,"20230814"],[38.748,64.775,"20230814"],[38.488,65.999,"20230814"],[38.523,66.032,"20230814"],[35.674,-0.445,"20230814"],[32.562,3.161,"20230814"],[47.002,54.081,"20230815"],[38.885,54.19,"20230816"],[38.225,54.099,"20230816"],[38.704,54.306,"20230816"],[38.694,54.261,"20230816"],[38.339,54.088,"20230816"],[38.086,54.72,"20230816"],[24.609,46.862,"20230816"],[36.73,10.054,"20230816"],[37.444,61.024,"20230817"],[37.47,61.025,"20230817"],[35.369,40.417,"20230817"],[35.3,40.428,"20230817"],[35.308,40.467,"20230817"],[35.353,40.389,"20230817"],[35.387,40.446,"20230817"],[35.629,-101.441,"20230817"],[38.166,-121.891,"20230818"],[36.717,3.45,"20230819"],[42.697,93.525,"20230820"],[24.65,46.951,"20230820"],[36.674,9.92,"20230820"],[36.724,10.066,"20230820"],[32.4,-102.328,"20230820"],[31.628,-102.098,"20230820"],[31.848,-101.774,"20230820"],[30.28,47.727,"20230821"],[32.544,-96.694,"20230821"],[32.683,-96.715,"20230821"],[43.19,58.205,"20230822"],[30.722,29.43,"20230822"],[38.015,-97.694,"20230822"],[38.317,-121.829,"20230822"],[37.739,-121.667,"20230822"],[45.211,12.013,"20230823"],[45.203,11.643,"20230823"],[31.296,34.754,"20230823"],[31.935,10.345,"20230823"],[36.403,-89.151,"20230823"],[39.598,53.582,"20230824"],[39.487,53.499,"20230824"],[39.112,53.991,"20230824"],[39.389,53.744,"20230824"],[39.5,53.658,"20230824"],[38.569,54.172,"20230824"],[38.509,54.153,"20230824"],[38.522,54.165,"20230824"],[38.881,54.186,"20230824"],[38.743,54.266,"20230824"],[38.691,54.302,"20230824"],[25.119,47.361,"20230824"],[23.778,48.403,"20230824"],[32.315,-101.936,"20230824"],[32.396,-101.852,"20230824"],[32.489,-101.92,"20230824"],[31.098,-101.206,"20230824"],[40.229,58.38,"20230825"],[36.131,40.83,"20230825"],[30.254,47.761,"20230825"],[30.198,47.832,"20230825"],[33.019,-96.965,"20230825"],[32.548,-96.762,"20230825"],[32.675,-96.768,"20230825"],[39.226,65.319,"20230826"],[39.172,65.312,"20230826"],[30.709,29.433,"20230826"],[29.864,31.156,"20230826"],[29.783,31.348,"20230826"],[35.816,-0.3,"20230826"],[35.677,-0.439,"20230826"],[32.422,4.008,"20230826"],[29.641,6.944,"20230826"],[29.621,6.948,"20230826"],[25.152,47.383,"20230828"],[24.07,49.122,"20230828"],[29.065,20.713,"20230828"],[28.836,20.81,"20230828"],[27.991,69.813,"20230901"],[-21.715,144.398,"20230903"],[-39.215,-64.176,"20230908"],[-33.122,151.438,"20230915"],[28.654,7.686,"20230922"],[31.737,47.42,"20230924"],[35.466,51.332,"20230924"],[25.885,-100.317,"20230924"],[31.783,6.213,"20230925"],[31.785,6.015,"20230925"],[31.772,5.911,"20230925"],[31.788,5.9,"20230925"],[31.794,5.892,"20230925"],[31.634,5.958,"20230925"],[31.128,35.206,"20230926"],[31.32,34.749,"20230926"],[31.624,35.229,"20230926"],[31.918,36.204,"20230926"],[36.143,41.143,"20230926"],[36.17,41.102,"20230926"],[31.124,-101.23,"20230927"],[38.745,80.049,"20230928"],[16.073,32.727,"20230928"],[39.547,57.769,"20230928"],[45.001,45.138,"20230928"],[25.908,71.563,"20230929"],[31.782,6.211,"20230929"],[31.561,6.012,"20230929"],[31.772,5.988,"20230929"],[31.126,35.18,"20230930"],[31.922,36.227,"20230930"],[27.885,7.88,"20230930"],[28.663,8.945,"20230930"],[21.941,56.034,"20231001"],[12.559,30.938,"20231002"],[30.374,46.78,"20231002"],[36.24,6.51,"20231002"],[25.907,71.645,"20231003"],[24.679,46.961,"20231003"],[36.233,60.017,"20231003"],[37.466,61.022,"20231003"],[38.557,62.748,"20231003"],[38.601,62.603,"20231003"],[38.553,62.819,"20231003"],[38.843,62.818,"20231003"],[39.911,65.9,"20231003"],[29.598,28.627,"20231003"],[35.069,40.625,"20231004"],[35.174,40.487,"20231004"],[35.033,40.703,"20231004"],[32.086,-104.489,"20231004"],[32.753,-104.218,"20231004"],[32.257,-103.972,"20231004"],[32.57,-104.159,"20231004"],[32.749,-104.2,"20231004"],[32.633,-104.197,"20231004"],[32.747,-104.271,"20231004"],[32.652,-103.933,"20231004"],[23.594,57.89,"20231005"],[45.282,41.784,"20231005"],[28.92,69.106,"20231006"],[30.279,46.921,"20231006"],[31.489,48.888,"20231006"],[32.049,48.728,"20231006"],[32.063,49.094,"20231006"],[28.827,21.978,"20231006"],[33.489,3.298,"20231006"],[32.986,3.455,"20231006"],[33.012,3.502,"20231006"],[32.993,3.103,"20231006"],[33.055,3.529,"20231006"],[31.195,6.76,"20231007"],[15.562,46.132,"20231008"],[15.551,45.85,"20231008"],[15.586,46.164,"20231008"],[43.76,79.125,"20231008"],[37.98,-1.287,"20231008"],[31.808,-103.946,"20231008"],[32.05,-104.063,"20231008"],[32.233,-103.688,"20231008"],[32.339,-103.245,"20231008"],[31.913,-103.689,"20231008"],[32.363,-103.453,"20231008"],[32.094,-103.58,"20231008"],[31.983,-103.756,"20231008"],[32.071,-103.527,"20231008"],[32.056,-103.472,"20231008"],[32.318,-103.62,"20231008"],[32.045,-103.465,"20231008"],[37.417,-120.952,"20231008"],[23.335,58.45,"20231009"],[39.469,53.592,"20231009"],[39.508,53.622,"20231009"],[39.557,53.741,"20231009"],[39.475,53.755,"20231009"],[39.492,53.642,"20231009"],[39.496,53.717,"20231009"],[39.356,54.018,"20231009"],[39.464,53.716,"20231009"],[39.52,53.666,"20231009"],[36.661,2.821,"20231009"],[41.09,-108.572,"20231009"],[39.388,106.698,"20231010"],[30.249,47.377,"20231010"],[30.225,47.755,"20231010"],[31.193,49.222,"20231010"],[31.252,49.156,"20231010"],[31.198,49.007,"20231010"],[44.658,124.005,"20231011"],[41.087,69.48,"20231011"],[44.889,45.162,"20231013"],[44.694,45.626,"20231013"],[38.571,62.791,"20231014"],[37.874,63.248,"20231014"],[37.898,63.224,"20231014"],[37.317,94.263,"20231015"],[37.304,94.292,"20231015"],[45.346,55.19,"20231015"],[45.184,38.776,"20231016"],[31.923,36.236,"20231016"],[28.625,52.087,"20231018"],[15.549,46.031,"20231019"],[45.725,85.247,"20231020"],[44.935,86.513,"20231020"],[41.361,113.071,"20231023"],[35.483,51.251,"20231023"],[38.097,23.666,"20231023"],[37.703,53.89,"20231024"],[37.657,53.898,"20231024"],[32.6,13.362,"20231024"],[36.438,61.69,"20231025"],[36.403,61.676,"20231025"],[36.436,61.722,"20231025"],[36.441,61.678,"20231025"],[36.57,61.704,"20231025"],[40.014,-109.532,"20231025"],[40.063,-108.762,"20231025"],[39.055,111.077,"20231026"],[40.783,61.243,"20231026"],[38.72,64.616,"20231026"],[36.975,42.821,"20231026"],[29.63,28.695,"20231026"],[29.595,28.611,"20231026"],[35.457,51.365,"20231027"],[35.771,50.82,"20231027"],[33.404,-87.249,"20231027"],[28.695,-106.047,"20231027"],[33.798,35.917,"20231028"],[33.315,36.46,"20231028"],[32.658,13.334,"20231028"],[31.359,-103.239,"20231028"],[31.33,-103.011,"20231028"],[31.152,-103.029,"20231028"],[31.335,-103.082,"20231028"],[27.412,96.042,"20231029"],[29.029,47.644,"20231029"],[28.747,77.133,"20231030"],[28.634,77.3,"20231030"],[28.414,77.155,"20231030"],[22.965,1.093,"20231101"],[-32.948,-70.762,"20231105"],[-6.545,106.665,"20231107"],[14.67,34.232,"20231121"],[-34.474,-59.035,"20231124"],[27.958,69.804,"20231125"],[29.114,47.956,"20231125"],[29.018,47.562,"20231125"],[29.635,47.921,"20231125"],[25.285,55.448,"20231127"],[31.907,-8.074,"20231127"],[-22.999,148.58,"20231128"],[30.982,49.999,"20231129"],[30.571,49.955,"20231129"],[30.799,49.839,"20231129"],[28.056,53.189,"20231130"],[29.787,31.349,"20231130"],[35.347,38.612,"20231130"],[28.771,7.179,"20231130"],[-32.731,151.239,"20231130"],[23.98,55.544,"20231201"],[30.999,-102.904,"20231201"],[31.869,-101.821,"20231201"],[31.871,-101.851,"20231201"],[31.943,-101.726,"20231201"],[31.922,-101.663,"20231201"],[32.566,-101.272,"20231201"],[35.749,50.882,"20231202"],[37.711,53.914,"20231202"],[37.574,53.989,"20231202"],[37.731,53.906,"20231202"],[37.761,53.88,"20231202"],[37.925,53.871,"20231202"],[38.493,54.182,"20231202"],[38.335,53.957,"20231202"],[37.908,53.867,"20231202"],[38.226,54.066,"20231202"],[38.501,54.164,"20231202"],[38.554,54.168,"20231202"],[38.481,54.047,"20231202"],[38.363,54.021,"20231202"],[35.38,38.603,"20231204"],[28.498,7.497,"20231204"],[28.635,7.08,"20231204"],[28.631,7.668,"20231204"],[32.101,-106.872,"20231204"],[22.887,55.587,"20231205"],[23.187,55.451,"20231205"],[36.386,47.048,"20231205"],[31.084,-101.195,"20231205"],[31.025,-101.263,"20231205"],[31.368,-101.51,"20231205"],[31.154,-101.552,"20231205"],[31.151,-101.374,"20231205"],[31.131,-101.206,"20231205"],[31.164,-101.318,"20231205"],[31.339,-101.4,"20231205"],[28.869,19.791,"20231206"],[29.667,21.114,"20231206"],[25.897,71.576,"20231217"],[29.703,19.706,"20231217"],[32.548,-101.283,"20231217"],[32.564,-101.247,"20231217"],[25.02,67.03,"20231220"],[36.743,113.155,"20231222"],[36.789,113.171,"20231222"],[15.764,46.177,"20231223"],[5.637,6.55,"20231223"],[26.163,67.485,"20231224"],[26.262,67.444,"20231224"],[31.897,-103.844,"20231224"],[31.658,-104.015,"20231224"],[31.696,-104.344,"20231224"],[31.683,-103.941,"20231224"],[32.052,-103.862,"20231224"],[31.975,-103.68,"20231224"],[32.083,-104.477,"20231224"],[31.85,-103.634,"20231224"],[31.767,-103.563,"20231224"],[27.432,95.229,"20231225"],[31.132,49.876,"20231226"],[30.067,51.551,"20231226"],[29.423,52.707,"20231226"],[29.499,28.545,"20231226"],[29.513,28.625,"20231226"],[-34.561,-58.695,"20231226"],[-32.971,-70.789,"20240105"],[-32.935,-70.776,"20240109"],[-34.556,-58.79,"20240112"],[-34.491,-58.79,"20240120"],[-35.325,-71.643,"20240122"],[25.786,68.702,"20240125"],[28.685,7.19,"20240126"],[31.379,-101.438,"20240127"],[31.543,-101.693,"20240127"],[31.562,-101.814,"20240127"],[32.268,-101.546,"20240127"],[32.341,-101.321,"20240127"],[28.03,-99.386,"20240128"],[27.865,-99.291,"20240128"],[28.166,-99.175,"20240128"],[11.468,104.867,"20240129"],[30.251,50.777,"20240129"],[30.277,50.792,"20240129"],[30.515,50.446,"20240129"],[30.52,50.494,"20240129"],[-11.921,-77.118,"20240129"],[33.415,-87.232,"20240129"],[33.083,-112.288,"20240129"],[35.615,-109.123,"20240129"],[35.816,110.605,"20240130"],[35.809,110.583,"20240130"],[37.049,111.729,"20240130"],[37.967,113.279,"20240130"],[37.898,113.012,"20240130"],[37.981,113.446,"20240130"],[37.945,113.027,"20240130"],[28.615,7.243,"20240130"],[-36.682,-72.165,"20240130"],[34.19,-80.28,"20240130"],[33.613,42.6,"20240131"],[31.878,-101.777,"20240131"],[37.765,53.907,"20240201"],[37.759,53.892,"20240201"],[37.762,53.928,"20240201"],[40.251,58.481,"20240201"],[10.301,-66.922,"20240201"],[33.408,-87.269,"20240202"],[33.377,-87.209,"20240202"],[33.409,-87.152,"20240202"],[28.657,7.395,"20240203"],[28.588,7.21,"20240203"],[28.61,7.451,"20240203"],[28.555,7.078,"20240203"],[38.539,79.165,"20240205"],[38.737,80.058,"20240205"],[32.609,-104.055,"20240212"],[32.579,-103.587,"20240212"],[32.428,-103.272,"20240212"],[32.377,-103.251,"20240212"],[32.014,-102.515,"20240212"],[31.329,-101.707,"20240212"],[29.196,47.922,"20240213"],[40.258,63.578,"20240214"],[39.215,65.31,"20240214"],[31.631,51.204,"20240214"],[31.634,51.201,"20240214"],[30.288,53.315,"20240214"],[10.009,-64.89,"20240215"],[9.381,-64.543,"20240215"],[9.0,-64.147,"20240215"],[24.651,46.906,"20240216"],[37.898,109.92,"20240217"],[36.511,110.6,"20240217"],[35.56,112.624,"20240217"],[35.714,112.53,"20240217"],[35.612,112.479,"20240217"],[30.271,47.358,"20240217"],[29.617,6.955,"20240218"],[35.848,-87.446,"20240223"],[27.968,69.819,"20240224"],[27.976,69.67,"20240224"],[25.836,71.589,"20240224"],[29.066,20.766,"20240224"],[32.544,-101.52,"20240224"],[38.066,109.769,"20240225"],[38.41,109.556,"20240225"],[38.412,110.049,"20240225"],[38.247,109.959,"20240225"],[38.158,110.597,"20240225"],[37.444,111.148,"20240225"],[37.812,111.107,"20240225"],[37.591,110.829,"20240225"],[37.487,110.813,"20240225"],[37.321,110.933,"20240225"],[37.647,110.896,"20240225"],[37.417,111.188,"20240225"],[36.938,111.705,"20240225"],[36.776,112.256,"20240225"],[36.397,112.935,"20240225"],[36.35,111.994,"20240225"],[36.37,112.86,"20240225"],[36.834,112.285,"20240225"],[36.701,112.572,"20240225"],[36.361,112.934,"20240225"],[36.315,112.857,"20240225"],[36.252,112.921,"20240225"],[36.207,112.974,"20240225"],[36.0,112.827,"20240225"],[-34.192,150.724,"20240225"],[-34.259,150.599,"20240225"],[37.213,-101.482,"20240225"],[37.064,-101.564,"20240225"],[30.461,30.794,"20240226"],[30.283,31.577,"20240226"],[28.079,33.324,"20240226"],[21.632,39.406,"20240226"],[31.839,5.951,"20240226"],[31.802,6.034,"20240226"],[28.781,9.274,"20240226"],[28.749,9.255,"20240226"],[28.691,9.757,"20240226"],[28.442,9.535,"20240226"],[28.088,9.779,"20240226"],[21.978,-102.206,"20240226"],[20.683,-100.499,"20240226"],[31.945,36.133,"20240227"],[-35.32,-71.646,"20240227"],[26.797,94.679,"20240228"],[27.962,69.776,"20240228"],[25.896,71.566,"20240228"],[-38.182,-68.1,"20240302"],[14.668,34.226,"20240303"],[-22.771,-43.749,"20240305"],[-36.682,-72.162,"20240316"],[-30.16,-52.028,"20240318"],[-11.926,-77.121,"20240319"],[26.636,105.442,"20240321"],[28.177,-99.157,"20240322"],[31.89,4.989,"20240323"],[35.435,51.365,"20240326"],[37.72,53.936,"20240326"],[37.932,53.925,"20240326"],[37.96,53.968,"20240326"],[37.74,53.938,"20240326"],[37.771,53.925,"20240326"],[27.978,-99.506,"20240326"],[28.206,-99.187,"20240326"],[32.143,-94.268,"20240326"],[27.456,95.47,"20240327"],[39.355,110.386,"20240327"],[30.304,50.704,"20240327"],[30.174,50.416,"20240327"],[30.282,50.817,"20240327"],[31.78,6.009,"20240327"],[37.761,113.521,"20240328"],[37.874,113.431,"20240328"],[37.949,113.241,"20240328"],[37.585,113.624,"20240328"],[37.825,113.475,"20240328"],[37.97,113.301,"20240328"],[37.904,113.093,"20240328"],[37.821,113.495,"20240328"],[37.839,113.468,"20240328"],[37.966,113.455,"20240328"],[31.341,34.751,"20240328"],[32.375,35.194,"20240328"],[34.69,38.605,"20240328"],[28.65,7.608,"20240328"],[32.006,-106.389,"20240328"],[40.953,-87.348,"20240329"],[31.787,6.217,"20240331"],[31.804,6.011,"20240331"],[31.71,6.0,"20240331"],[31.798,6.221,"20240331"],[31.83,6.123,"20240331"],[34.704,38.656,"20240401"],[35.306,40.464,"20240401"],[35.366,40.421,"20240401"],[35.35,40.378,"20240401"],[36.054,41.197,"20240401"],[37.87,-121.173,"20240401"],[39.56,57.743,"20240403"],[25.858,-100.313,"20240403"],[31.381,-94.574,"20240403"],[24.589,46.882,"20240404"],[36.238,60.0,"20240404"],[30.698,29.46,"20240404"],[19.641,-99.306,"20240404"],[31.879,36.265,"20240405"],[38.488,-96.417,"20240405"],[23.601,57.855,"20240406"],[40.795,-80.104,"20240407"],[37.896,63.211,"20240408"],[37.906,63.229,"20240408"],[39.918,65.86,"20240408"],[42.188,69.489,"20240408"],[48.254,36.989,"20240408"],[46.793,39.486,"20240409"],[44.003,87.84,"20240413"],[33.435,-7.55,"20240414"],[37.464,110.837,"20240415"],[37.48,110.855,"20240415"],[36.974,111.716,"20240415"],[36.836,112.292,"20240415"],[36.368,112.867,"20240415"],[36.402,112.952,"20240415"],[36.363,112.948,"20240415"],[36.478,112.986,"20240415"],[36.7,112.587,"20240415"],[36.159,112.99,"20240415"],[36.222,112.943,"20240415"],[36.007,112.829,"20240415"],[36.135,112.923,"20240415"],[36.235,112.986,"20240415"],[39.668,60.217,"20240415"],[39.691,60.214,"20240415"],[39.661,60.245,"20240415"],[39.666,60.177,"20240415"],[37.303,94.287,"20240416"],[37.376,94.114,"20240416"],[39.371,-3.259,"20240416"],[39.379,-3.274,"20240416"],[31.765,6.223,"20240416"],[31.958,36.192,"20240417"],[28.922,69.117,"20240418"],[29.183,21.548,"20240418"],[31.314,48.797,"20240419"],[31.131,49.365,"20240419"],[31.311,49.192,"20240419"],[30.303,50.103,"20240419"],[30.759,49.991,"20240419"],[30.943,49.89,"20240419"],[28.093,53.264,"20240419"],[27.543,53.308,"20240419"],[25.271,55.441,"20240419"],[35.419,50.974,"20240420"],[15.574,46.011,"20240420"],[37.739,53.9,"20240421"],[37.712,53.91,"20240421"],[37.767,53.899,"20240421"],[37.581,54.0,"20240421"],[19.648,-92.471,"20240421"],[36.556,61.469,"20240422"],[36.469,61.463,"20240422"],[40.954,-87.312,"20240422"],[31.48,-97.26,"20240422"],[29.953,-95.238,"20240422"],[37.885,113.018,"20240423"],[37.926,113.045,"20240423"],[37.873,113.072,"20240423"],[37.89,113.097,"20240423"],[37.721,113.625,"20240423"],[37.957,113.443,"20240423"],[37.837,113.466,"20240423"],[37.939,113.243,"20240423"],[37.955,113.279,"20240423"],[37.937,113.426,"20240423"],[37.861,113.487,"20240423"],[40.052,62.779,"20240423"],[40.208,62.51,"20240423"],[38.537,65.184,"20240423"],[38.513,65.256,"20240423"],[38.793,64.612,"20240423"],[38.748,64.606,"20240423"],[38.497,65.37,"20240423"],[30.065,51.543,"20240423"],[29.662,28.351,"20240423"],[35.453,51.337,"20240424"],[38.115,54.017,"20240425"],[36.556,109.805,"20240426"],[36.533,110.55,"20240426"],[35.81,110.595,"20240426"],[35.763,111.78,"20240426"],[30.357,46.844,"20240426"],[29.05,48.036,"20240426"],[29.182,47.905,"20240426"],[30.719,29.424,"20240427"],[19.697,-101.342,"20240427"],[18.028,-94.561,"20240428"],[22.979,72.573,"20240429"],[-11.924,-77.097,"20240501"],[-11.914,-76.869,"20240501"],[-11.821,-77.047,"20240501"],[-12.214,-76.75,"20240501"],[-23.664,-46.389,"20240517"],[29.545,28.542,"20240522"],[35.652,112.532,"20240523"],[35.609,112.489,"20240523"],[35.552,112.634,"20240523"],[36.173,112.983,"20240523"],[36.02,112.825,"20240523"],[36.143,112.922,"20240523"],[36.238,112.977,"20240523"],[39.464,53.544,"20240524"],[39.456,53.635,"20240524"],[39.363,53.775,"20240524"],[45.346,55.182,"20240526"],[51.791,36.887,"20240530"],[19.638,-99.318,"20240606"],[19.58,-99.213,"20240606"],[19.802,-99.01,"20240606"],[19.758,-99.244,"20240606"],[23.352,58.447,"20240608"],[25.783,60.941,"20240608"],[39.505,53.629,"20240608"],[39.469,53.558,"20240608"],[44.78,20.589,"20240608"],[21.597,39.389,"20240609"],[30.243,47.466,"20240609"],[30.386,47.348,"20240609"],[30.309,47.739,"20240609"],[31.371,49.065,"20240609"],[32.072,49.078,"20240609"],[29.113,-95.365,"20240609"],[35.886,108.158,"20240610"],[26.218,49.847,"20240610"],[28.557,52.025,"20240610"],[29.428,52.704,"20240610"],[29.707,53.289,"20240610"],[28.056,69.372,"20240612"],[27.976,69.819,"20240612"],[29.132,21.434,"20240612"],[45.618,85.155,"20240615"],[43.889,58.677,"20240615"],[51.974,44.335,"20240618"],[51.371,43.337,"20240619"],[51.284,43.042,"20240619"],[45.161,38.79,"20240623"],[26.171,67.486,"20240623"],[37.099,30.742,"20240623"],[32.506,36.154,"20240623"],[32.592,13.354,"20240623"],[37.174,106.748,"20240624"],[39.935,32.424,"20240624"],[36.982,37.399,"20240624"],[35.363,38.638,"20240624"],[25.686,49.433,"20240624"],[26.173,49.896,"20240624"],[40.927,-87.299,"20240624"],[40.893,-86.69,"20240624"],[38.755,110.843,"20240625"],[38.88,111.117,"20240625"],[37.948,112.964,"20240625"],[37.942,113.021,"20240625"],[37.906,113.064,"20240625"],[37.895,113.001,"20240625"],[36.368,114.178,"20240625"],[36.344,114.264,"20240625"],[40.051,61.028,"20240625"],[38.723,64.615,"20240625"],[38.614,64.761,"20240625"],[32.08,49.106,"20240625"],[31.124,49.88,"20240625"],[30.992,49.953,"20240625"],[30.84,50.685,"20240625"],[30.463,50.484,"20240625"],[30.016,51.589,"20240625"],[28.486,53.41,"20240625"],[28.06,53.218,"20240625"],[29.821,27.815,"20240625"],[29.684,28.427,"20240625"],[29.613,28.716,"20240625"],[29.573,28.634,"20240625"],[29.557,28.531,"20240625"],[29.544,28.543,"20240625"],[32.395,-116.732,"20240625"],[35.76,50.846,"20240626"],[35.454,51.339,"20240626"],[-15.874,-48.157,"20240626"],[33.337,36.457,"20240627"],[31.34,-103.184,"20240627"],[28.336,-99.612,"20240627"],[28.02,-99.728,"20240627"],[35.04,40.704,"20240628"],[-30.152,-51.985,"20240701"],[-33.704,-70.87,"20240701"],[29.032,47.937,"20240702"],[-23.511,-46.799,"20240703"],[-23.426,-46.584,"20240703"],[-23.437,-46.98,"20240703"],[-23.363,-46.789,"20240703"],[-23.732,-46.47,"20240703"],[-23.694,-46.424,"20240703"],[-23.892,-46.335,"20240703"],[-34.454,-58.598,"20240703"],[33.067,39.501,"20240719"],[31.521,-9.661,"20240719"],[-23.425,-47.55,"20240720"],[-22.795,-47.227,"20240720"],[-17.487,-66.112,"20240720"],[27.957,69.826,"20240721"],[26.155,49.887,"20240722"],[27.745,52.203,"20240722"],[28.686,52.428,"20240722"],[30.245,31.564,"20240722"],[29.651,6.959,"20240722"],[29.617,6.958,"20240722"],[32.406,-101.698,"20240723"],[31.555,-101.711,"20240727"],[31.685,-101.99,"20240727"],[31.989,-101.792,"20240727"],[31.869,-101.771,"20240727"],[31.887,-101.765,"20240727"],[32.453,-101.442,"20240727"],[35.776,50.816,"20240728"],[35.431,50.965,"20240728"],[37.939,53.999,"20240728"],[38.361,54.156,"20240728"],[37.944,54.092,"20240728"],[37.787,54.007,"20240728"],[28.125,18.791,"20240728"],[30.845,50.701,"20240729"],[37.055,35.407,"20240729"],[43.309,52.714,"20240730"],[43.301,52.77,"20240730"],[43.286,52.861,"20240730"],[31.968,-106.395,"20240730"],[31.026,45.752,"20240801"],[35.413,51.393,"20240801"],[39.547,57.79,"20240801"],[38.309,-121.826,"20240803"],[37.885,-121.189,"20240803"],[40.223,29.0,"20240804"],[40.776,30.014,"20240804"],[45.161,38.812,"20240804"],[35.663,-0.478,"20240804"],[40.947,-87.326,"20240804"],[35.923,6.001,"20240805"],[25.854,-100.321,"20240805"],[32.41,-116.728,"20240805"],[29.836,27.816,"20240806"],[31.772,5.918,"20240806"],[31.841,5.938,"20240806"],[31.819,5.932,"20240806"],[31.687,5.995,"20240806"],[29.917,-90.25,"20240806"],[31.14,35.214,"20240807"],[31.613,35.242,"20240807"],[35.288,40.494,"20240807"],[43.301,52.728,"20240807"],[43.303,52.873,"20240807"],[37.458,-121.934,"20240807"],[37.759,-121.641,"20240807"],[39.489,53.531,"20240812"],[39.47,53.643,"20240812"],[31.728,39.803,"20240812"],[36.752,10.078,"20240812"],[32.234,-101.914,"20240812"],[32.22,-102.006,"20240812"],[32.28,-101.99,"20240812"],[32.32,-102.104,"20240812"],[32.345,-101.832,"20240812"],[32.306,-101.846,"20240812"],[31.154,-101.254,"20240812"],[29.888,47.91,"20240813"],[29.791,31.357,"20240814"],[41.081,69.496,"20240815"],[32.518,-101.524,"20240816"],[37.802,111.097,"20240821"],[37.113,112.03,"20240821"],[37.082,112.002,"20240821"],[37.072,111.811,"20240821"],[36.711,112.576,"20240821"],[36.361,112.863,"20240821"],[36.406,112.94,"20240821"],[36.478,112.991,"20240821"],[36.75,113.145,"20240821"],[36.244,113.004,"20240821"],[36.234,112.949,"20240821"],[31.432,48.642,"20240821"],[31.315,49.116,"20240821"],[31.066,49.385,"20240821"],[31.144,49.31,"20240821"],[31.005,49.592,"20240821"],[30.313,50.002,"20240821"],[25.281,55.426,"20240821"],[13.582,100.682,"20240823"],[39.953,49.235,"20240823"],[32.654,35.553,"20240823"],[32.481,36.188,"20240823"],[38.676,-90.104,"20240823"],[31.737,-103.933,"20240823"],[31.77,-103.878,"20240823"],[31.739,-103.861,"20240823"],[31.035,-103.236,"20240823"],[28.074,-99.967,"20240823"],[28.007,-99.897,"20240823"],[25.955,-98.876,"20240823"],[19.732,-92.503,"20240823"],[36.461,61.495,"20240824"],[36.383,61.603,"20240824"],[35.361,38.645,"20240824"],[33.854,-6.761,"20240824"],[38.668,63.086,"20240825"],[30.95,49.953,"20240825"],[30.84,50.704,"20240825"],[30.582,50.321,"20240825"],[30.071,51.572,"20240825"],[28.694,52.441,"20240825"],[29.009,51.95,"20240825"],[25.642,55.797,"20240825"],[25.312,55.665,"20240825"],[23.592,57.88,"20240825"],[29.578,28.56,"20240825"],[29.614,28.629,"20240825"],[33.949,-117.85,"20240825"],[32.859,-117.169,"20240825"],[32.42,-116.737,"20240825"],[35.51,51.209,"20240826"],[-16.272,-71.644,"20240826"],[10.31,-66.903,"20240830"],[-15.862,-48.165,"20240830"],[-34.238,-70.711,"20240831"],[-23.44,-47.563,"20240902"],[-11.911,-76.865,"20240913"],[-8.867,13.39,"20240916"],[-20.569,-54.671,"20240918"],[-11.912,-76.866,"20240921"],[-12.23,-76.761,"20240921"],[-11.924,-77.11,"20240921"],[31.351,45.97,"20240924"],[-22.808,-43.751,"20240924"],[35.676,-0.445,"20240927"],[28.046,19.922,"20240928"],[28.278,19.943,"20240928"],[28.888,20.97,"20240928"],[29.275,21.38,"20240928"],[25.865,-100.316,"20240928"],[28.254,-98.241,"20240928"],[31.869,6.188,"20240929"],[31.771,5.978,"20240929"],[29.937,-90.264,"20240929"],[31.854,36.318,"20240930"],[36.156,40.81,"20240930"],[36.154,41.124,"20240930"],[35.183,-102.034,"20240930"],[37.873,-121.176,"20240930"],[41.456,-109.678,"20241001"],[41.895,-108.15,"20241001"],[36.244,60.007,"20241003"],[38.257,62.591,"20241003"],[38.536,62.706,"20241003"],[29.632,28.691,"20241003"],[19.647,-99.278,"20241003"],[33.159,-85.523,"20241003"],[35.735,-82.633,"20241003"],[35.66,112.51,"20241004"],[35.608,112.471,"20241004"],[36.429,112.946,"20241004"],[36.258,113.0,"20241004"],[36.263,112.917,"20241004"],[36.243,112.947,"20241004"],[35.087,40.622,"20241004"],[35.109,40.698,"20241004"],[35.242,40.671,"20241004"],[35.165,40.518,"20241004"],[34.993,40.776,"20241004"],[28.655,9.778,"20241004"],[32.291,-103.939,"20241004"],[32.23,-103.749,"20241004"],[32.754,-104.218,"20241004"],[37.87,-121.195,"20241004"],[39.442,53.362,"20241005"],[39.452,53.635,"20241005"],[39.473,53.745,"20241005"],[39.476,53.676,"20241005"],[39.46,53.649,"20241005"],[34.893,-1.299,"20241005"],[33.334,-96.63,"20241005"],[32.946,3.328,"20241006"],[40.259,-104.596,"20241006"],[24.682,46.843,"20241007"],[28.982,51.953,"20241007"],[37.476,61.842,"20241007"],[38.235,62.656,"20241007"],[39.024,64.074,"20241007"],[39.031,64.057,"20241007"],[39.926,65.844,"20241007"],[39.935,65.762,"20241007"],[31.235,6.72,"20241007"],[41.4,-96.25,"20241007"],[50.9,-113.598,"20241010"],[37.878,-121.184,"20241011"],[31.62,35.244,"20241012"],[25.886,-100.338,"20241012"],[43.295,52.716,"20241014"],[30.441,-92.864,"20241014"],[21.648,39.406,"20241015"],[27.967,69.824,"20241017"],[30.252,31.556,"20241019"],[21.275,40.492,"20241019"],[25.05,67.072,"20241020"],[31.947,36.127,"20241020"],[34.211,-84.419,"20241020"],[25.292,55.436,"20241022"],[25.159,55.426,"20241022"],[27.708,59.145,"20241023"],[15.559,45.789,"20241023"],[15.578,46.013,"20241023"],[23.602,57.895,"20241026"],[23.336,58.44,"20241026"],[-34.533,-58.579,"20241026"],[30.942,-103.01,"20241130"],[30.995,-102.921,"20241130"],[30.974,-102.925,"20241130"],[32.242,-102.048,"20250922"]];
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const REGION={pilot:[30.5,33.5,-104.5,-100.5],hunter:null,mapper:null,arctic:[60,90,-180,180],geo:[-60,70,-170,-30]};
+const _plumeCache={};
+function regionPlumes(id){ if(_plumeCache[id]) return _plumeCache[id]; const b=REGION[id];
+ return _plumeCache[id]=b?NASA_EMIT.filter(p=>p[0]>=b[0]&&p[0]<=b[1]&&p[1]>=b[2]&&p[1]<=b[3]):NASA_EMIT;}
+function cloudFrac(id,mo){const L=NASA_POWER[id];return L.reduce((a,s)=>a+s.cloud[mo],0)/L.length/100;}
+function cloudAvg(id){let t=0;for(let m=0;m<12;m++)t+=cloudFrac(id,m);return t/12;}
+const KP_MEAN=NASA_KP.reduce((a,x)=>a+x[1],0)/NASA_KP.length;
+function fmtYM(ym){return MONTHS[parseInt(ym.slice(5))-1]+' '+ym.slice(0,4);}
+function liveKp(){ if(!F||F.kpStart===undefined) return null; return NASA_KP[(F.kpStart+F.m)%NASA_KP.length]; }
+function liveMonth(){ const e=liveKp(); return e?parseInt(e[0].slice(5))-1:null; }
+function fmtLatLon(a,b){return `${Math.abs(a).toFixed(2)}°${a>=0?'N':'S'}, ${Math.abs(b).toFixed(2)}°${b>=0?'E':'W'}`;}
+function fmtDate(d){return `${MONTHS[parseInt(d.slice(4,6))-1]} ${parseInt(d.slice(6))}, ${d.slice(0,4)}`;}
+function siteNames(id){return NASA_POWER[id].map(s=>s.name).join(', ');}
+function daySciShare(c,act){const all=act.reduce((a,i)=>a+instVal(c,i),0); if(!all) return 0; return act.filter(i=>i.day).reduce((a,i)=>a+instVal(c,i),0)/all;}
+function plumeMap(id,opts={}){
+ const W=opts.w||360,H=W/2, X=lon=>(lon+180)/360*W, Y=lat=>(90-lat)/180*H;
+ const reg=regionPlumes(id), b=REGION[id];
+ let g='';
+ for(let lo=-180;lo<=180;lo+=30) g+=`<line x1="${X(lo)}" y1="0" x2="${X(lo)}" y2="${H}" stroke="#1c2a42" stroke-width=".5" vector-effect="non-scaling-stroke"/>`;
+ for(let la=-60;la<=60;la+=30) g+=`<line x1="0" y1="${Y(la)}" x2="${W}" y2="${Y(la)}" stroke="#1c2a42" stroke-width="${la===0?1:.5}" vector-effect="non-scaling-stroke"/>`;
+ g+=`<rect x="0" y="${Y(52)}" width="${W}" height="${Y(-52)-Y(52)}" fill="#4fc3f7" opacity=".05"/>`;
+ const all=opts.dimAll?NASA_EMIT.map(p=>`<circle cx="${X(p[1]).toFixed(1)}" cy="${Y(p[0]).toFixed(1)}" r="1" fill="#3a4c6a" opacity=".7"/>`).join(''):'';
+ const box=b?`<rect x="${X(b[2])}" y="${Y(b[1])}" width="${X(b[3])-X(b[2])}" height="${Y(b[0])-Y(b[1])}" fill="none" stroke="#b8650f" stroke-width="1.5" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"/>`:'';
+ let vb=`0 0 ${W} ${H}`, rr=opts.r||1.6, zoom=opts.zoom&&b&&(b[3]-b[2])<40;
+ if(zoom){const x0=X(b[2]-3),x1=X(b[3]+3),y0=Y(b[1]+2),y1=Y(b[0]-2); const vw=x1-x0, vh=Math.max(vw/2,y1-y0); vb=`${x0} ${y0-(vh-(y1-y0))/2} ${vw} ${vh}`; rr=vw/90;}
+ const pts=reg.map((p,i)=>`<circle class="rp" cx="${X(p[1]).toFixed(2)}" cy="${Y(p[0]).toFixed(2)}" r="${rr}" fill="#c08cff" opacity="${opts.hidden?0:.75}"/>`).join('');
+ return `<svg viewBox="${vb}" style="width:100%;max-height:340px;background:#0b1424;border:1px solid var(--line);border-radius:10px">${g}${all}${box}<g id="${opts.gid||''}">${pts}</g>
+  ${zoom?'':`<text x="6" y="${H-6}" font-size="9" fill="#62728e" font-family="JetBrains Mono">NASA EMIT CH₄ plumes · shaded band = EMIT coverage (±52°)</text>`}</svg>${zoom?`<div class="pill" style="margin-top:4px">Zoomed to ${siteNames(id)} · ${reg.length} NASA EMIT plumes</div>`:''}`;
+}
+function nasaSources(){
+ return `<div class="pill" style="margin-top:6px">
+  <b>NASA EMIT</b>: ${fmt(NASA_EMIT.length)} real methane plume detections from the ISS (2022–2025), used for plume alerts and maps. <a href="https://doi.org/10.5067/EMIT/EMITL2BCH4PLM.002" target="_blank">EMITL2BCH4PLM v002</a><br>
+  <b>NASA OMNI</b>: monthly geomagnetic storm days (Kp ≥ 5), Jan 2015–Oct 2025, replayed as your mission's space weather. <a href="https://omniweb.gsfc.nasa.gov/" target="_blank">OMNIWeb / SPDF</a><br>
+  <b>NASA POWER</b>: monthly cloud cover, sunlight, and temperature at each mission's real target sites, used for cloud odds and science losses. <a href="https://power.larc.nasa.gov/" target="_blank">power.larc.nasa.gov</a></div>`;
+}
+
+// ===================== RISK MODEL =====================
+// Accident odds per month, worked out from the design, orbit, mission, team and the spacecraft's condition.
+const RISK_NAMES={storm:'☀ Solar storm',wheel:'⚙ Reaction wheel jam',drift:'🧭 Magnetorquer drift',debris:'☄ Debris conjunction',cloud:'☁ Cloud cover',
+ oper:'😴 Operator error',blowout:'🔥 Blowout report',gswx:'📡 Ground-station weather',cell:'🔋 Battery cell failure',crash:'💾 Computer crash',thermal:'🌡 Overheating',battfault:'🔋 Battery fault'};
+function risks(c,live){
+ const sc=c.sc, orb=c.orb, out=[]; if(!orb) return out;
+ const k=Math.min(1,18/sc.months);
+ const hp=live&&F?F.hp:100, age=1+0.8*(1-hp/100);
+ const act=live&&F?c.insts.filter(i=>F.active.has(i.id)):c.insts;
+ const r=live&&F?rates():{margin:c.margin,load:c.load};
+ const add=(t,p,why)=>{if(p>0.0005) out.push({t,p,why});};
+ // space weather
+ const kpE=live?liveKp():null, sdays=kpE?kpE[1]:KP_MEAN;
+ add('storm',Math.min(0.25,(0.015+0.02*sdays)*orb.radM)*k,(kpE?`NASA OMNI: Kp ≥ 5 on ${sdays} day${sdays===1?'':'s'} in ${fmtYM(kpE[0])}`:`NASA OMNI average for 2015–2025: ${fmt(KP_MEAN,1)} storm days per month`)+(orb.radM>1?`; high orbit, radiation ×${orb.radM}`:''));
+ // pointing hardware
+ if(c.p.adcs&&c.p.adcs.fine) add('wheel',0.03*k*age*(sc.months>24?1.3:1),(sc.months>24?'Long mission, wheels wear out':'Moving parts can jam')+(hp<80?'; the damaged spacecraft is more fragile':''));
+ else if(c.p.adcs) add('drift',0.05*k,'Magnetorquers lose lock easily');
+ // debris depends on orbit and size
+ const deb={sso:0.06,leo:0.045,vleo:0.02,eq:0.03,geo:0.01,heo:0.02}[orb.id]||0.03;
+ const size=Math.min(2.5,Math.max(0.6,Math.sqrt(c.wet/10)));
+ add('debris',deb*size*k,`${orb.id==='sso'?'Sun-synchronous orbits are the most crowded':orb.id==='vleo'?'Air drag cleans debris out of very low orbits':orb.id==='geo'?'GEO has very little debris':'Moderate debris'}${size>1.2?', and a big spacecraft is an easier target':size<0.8?', and a tiny CubeSat is hard to hit':''}`);
+ // clouds only matter to sunlight sensors
+ const day=act.some(i=>i.day);
+ const lm=live?liveMonth():null, cf=lm!==null?cloudFrac(sc.id,lm):cloudAvg(sc.id);
+ add('cloud',(day?0.01+0.13*cf:0.015)*k,day?`NASA POWER: ${fmt(cf*100)}% cloud cover over your targets${lm!==null?' in '+MONTHS[lm]:' (yearly average)'}`:'Only thick storms affect your thermal and laser detectors');
+ // team
+ const ops=(1+0.08*act.length)*(c.p.storage&&c.p.storage.ai?0.5:1)*(1+sc.months/72);
+ add('oper',c.food.err*ops,`${c.food.name} (morale ${c.food.morale}%)${act.length>3?', with many instruments to run':''}${c.p.storage&&c.p.storage.ai?', with AI automation helping':''}${sc.months>30?', on a long, tiring mission':''}`);
+ // opportunities
+ const np=regionPlumes(sc.id).length;
+ add('blowout',(sc.id==='arctic'?0.01:(0.02+0.07*Math.min(1,np/150))*(sc.id==='mapper'?0.4:1))*k,np?`NASA EMIT detected ${fmt(np)} methane plumes ${REGION[sc.id]?'in this region':'worldwide'} (2022–2025)`:'NASA EMIT (on the ISS) can\'t see north of 52°, so there\'s no plume record here');
+ // ground-station weather
+ if(c.p.comms&&c.p.comms.wx) add('gswx',(c.p.comms.wx==='cloud'?0.12:0.07)*k,c.p.comms.wx==='cloud'?'Laser links fail under any cloud':'Ka-band fades in heavy rain');
+ // battery
+ const b=c.p.battery;
+ if(b&&b.risk&&!(live&&F&&F.flags.cell)) add('cell',1-Math.pow(1-b.risk,1/sc.months),'Experimental solid-state cells');
+ if(b&&!b.rtg&&c.eclH>0&&(b.fade||(b.dod&&c.battNeed>b.wh*b.dod))) add('battfault',0.03*k*age,b.fade?'NiCd cells age fast':'Deep discharges every orbit');
+ // electronics
+ const def=Math.max(0,c.radNeed-c.radHave);
+ if(def>0||(r.margin<0)) add('crash',((0.05*def+(r.margin<0?0.04:0))*k*age+0.01)*(live&&F&&F.patched?0.5:1),[def>0?'Not enough radiation tolerance':'',r.margin<0?'brownouts reset the computer':''].filter(Boolean).join(', and ').replace(/^./,ch=>ch.toUpperCase()));
+ const hd=r.load/Math.max(0.5,c.dry);
+ if(hd>4) add('thermal',Math.min(0.08,0.015*(hd-4))*k,`${fmt(hd,1)} W per kg: hard to shed the heat`);
+ // never more than 60% total per month
+ if(S.creative){ const mult=ACC_LEVELS[S.acc.level][1]; for(let i=out.length-1;i>=0;i--){ if(!mult||S.acc.off[out[i].t]) out.splice(i,1); else out[i].p*=mult; } }
+ const cap=S.creative&&S.acc.level===3?0.85:0.6; const tot=out.reduce((a,x)=>a+x.p,0); if(tot>cap) out.forEach(x=>x.p*=cap/tot);
+ return out.sort((a,b)=>b.p-a.p);
+}
+function riskList(c,live){
+ const L=risks(c,live); if(!L.length) return '';
+ return `<table>${L.map(x=>`<tr><td><b>${RISK_NAMES[x.t]}</b><div class="pill">${x.why}</div></td><td>${fmt(x.p*100,1)}%/mo</td></tr>`).join('')}</table>`;
+}
+
+// ===================== RENDER =====================
+function hud(){
+ $('hud').innerHTML=`<div>Treasury<b>${money(A.funds)}</b></div><div>Reputation<b>★ ${A.rep}</b></div>
+  <div class="c">Methane detected<b>${fmt(A.mt,1)} Mt</b></div>${S.creative?'<div style="border-color:var(--ch4)"><span style="color:var(--ch4)">Mode</span><b style="color:var(--ch4)">🎨 Creative</b></div>':''}<button class="resetbtn" onclick="openReset()">↺ Reset</button>`;
+}
+function render(){
+ $('steps').style.display=S.step===0?'none':'flex'; $('steps').innerHTML=STEPS.map((s,i)=>`<span class="${i===S.step?'on':i<S.step?'done':''}"><i>${i<S.step?'✓':i+1}</i>${s}</span>`).join('');
+ document.querySelector('.grid').style.gridTemplateColumns=S.step===6?'1fr':''; $('side').style.display=S.step===6?'none':'';
+ [rHQ,rCraft,rPayload,rLaunch,rReview,rFlight,rReport][S.step]();
+ rSide(); hud();
+}
+function roleTag(){const r=STEP_ROLE[S.step]; if(!r) return ''; const R=find(ROLES,r); return `<div class="role">At the controls: ${esc(playerFor(r))}, ${R.name}</div>`;}
+function nav(canNext,nextLabel='Next →'){
+ return `<div class="nav"><button class="btn ghost" onclick="go(-1)">← ${S.step===1?'Back to HQ':'Back'}</button>
+ <button class="btn" ${canNext?'':'disabled'} onclick="go(1)">${nextLabel}</button></div>`;
+}
+function go(d){S.step+=d; if(S.step===4) S.votes=Array(S.n).fill(false); render(); window.scrollTo(0,0);}
+function stats(o){const s=[];
+ if(o.c!==undefined) s.push(money(o.c)); if(o.m) s.push(kg(o.m)); if(o.p) s.push(`${o.p} W`);
+ if(o.gen) s.push(`${fmt(o.gen)} W made`); if(o.rtg) s.push(`${o.rtg} W constant`); if(o.wh) s.push(`${fmt(o.wh)} Wh`);
+ if(o.rate) s.push(o.rate<1?`${fmt(o.rate*1000,1)} kbps`:o.rate>=1000?`${fmt(o.rate/1000,o.rate>=10000?0:1)} Gbps`:`${o.rate} Mbps`);
+ if(o.cap) s.push(o.cap>=1000?`${fmt(o.cap/1000,1)} TB`:`${o.cap} GB`); if(o.dm&&o.dm<1) s.push(`data ×${o.dm}`);
+ if(o.isp) s.push(`Isp ${o.isp}s`); if(o.rad) s.push(`rad ${o.rad}`); if(o.data!==undefined) s.push(`${o.data} Gb/day`);
+ if(o.sci) s.push(`science ${o.sci}`); if(o.fine||o.point) s.push('needs fine pointing'); if(o.day) s.push('daylight only');
+ return (o.eff?`<div class="eff"><span style="width:${o.eff}%"></span><em>${o.eff}% effective</em></div>`:'')+`<div class="stats">${s.map(x=>`<b>${x}</b>`).join('')}</div>`;}
+function lockLine(o){return unlocked(o)?'':`<div class="lockt">🔒 Unlocks at ★ ${o.rep}</div>`;}
+
+function rHQ(){
+ const defunded=!S.creative&&A.funds<DEFUND&&A.missions>0;
+ $('main').innerHTML=`<div class="modesw"><button class="${S.creative?'':'on'}" onclick="setMode(false)"><b>🏛 Campaign</b><span>Money, limits, unlocks, real stakes</span></button><button class="${S.creative?'on':''}" onclick="setMode(true)"><b>🎨 Creative</b><span>No budget, power, or mass limits. Everything unlocked. You control accidents.</span></button></div>
+ ${S.creative?creativePanel():''}
+ ${roleTag()}<h2>${S.creative?'Creative sandbox':'Agency headquarters'}</h2>
+ ${S.creative?'<p class="lead">Build anything, fly anywhere. Every mission and part is unlocked, there are no budget, power, or mass limits, and you decide which accidents happen.</p>':''}<p class="lead" style="${S.creative?'display:none':''}">You run a new CubeSat agency hunting methane, a greenhouse gas that traps about 80× more heat than CO₂ over 20 years. Good missions earn funding and reputation, which unlock bigger missions and better tech. Bad ones can get your agency shut down.</p>
+ ${defunded?`<div class="alert"><b class="bad">Agency defunded.</b> You have ${money(A.funds)} left, which isn't enough for even the smallest mission. Your record: ${A.missions} missions, ${fmt(A.mt,1)} Mt CO₂e avoided. <br><button class="btn" style="margin-top:8px" onclick="newAgency()">Start a new agency</button></div>`:''}
+ <div class="sec"><h3>Mission board</h3><small>Pick one to fund. Clearing a mission again pays 60% of the reward.</small></div>
+ <div class="cards">${SCEN.map((s,ix)=>{const lk=!unlocked(s);const b=A.best[s.id];return `<div class="card mission ${lk?'lock':''} ${S.scen===s.id?'sel':''}" style="--tier:${['#4fd08b','#4fc3f7','#b98cff','#3fd6c6','#f5a04a'][ix]}" onclick="${lk?'':`pickScen('${s.id}')`}">
+  ${lockLine(s)}
+  <div><span class="tierb">${s.diff}</span></div><div class="t">${s.name}</div><div class="d">${s.desc}</div>
+  <div class="pill" style="margin-bottom:6px">📍 ${siteNames(s.id)}<br>☁ ${fmt(cloudAvg(s.id)*100)}% avg cloud (NASA POWER) · 🔥 ${fmt(regionPlumes(s.id).length)} EMIT plumes</div><div class="stats">${b!==undefined?`<b style="color:var(--accent);font-weight:700">★ best ${b}</b>`:''}<b>Reward up to ${money(Math.round(s.reward*(A.cleared[s.id]?0.6:1)))}</b><b>${s.months} months</b></div></div>`}).join('')}</div>
+ ${S.creative?'':`<div class="colp" style="margin:16px 0;border-color:#1d4b6e"><div class="sec" style="margin-top:0"><h3>☀️ Power upgrades</h3><small>Every satellite uses your agency's solar array</small></div>
+ <div class="flex" style="justify-content:space-between">
+  <div><div style="font-family:var(--mono);font-size:26px;color:var(--cyan)">${A.power} W</div><div class="pill">Starts at ${BASE_POWER} W. Adds ${fmt(A.power*PANEL_KG_PER_W,1)} kg to each satellite. Max ${POWER_MAX} W.</div></div>
+  ${A.power>=POWER_MAX?'<b class="ok">Maxed out</b>':`<button class="btn" ${A.funds<powerPrice()?'disabled':''} onclick="buyPower()">Buy +${POWER_STEP} W for ${money(powerPrice())}</button>`}
+ </div><div class="bar" style="margin-top:10px"><i style="width:${A.power/POWER_MAX*100}%"></i></div></div>`}
+ <div class="sec"><h3>🛰 Real NASA data in this game</h3><small>Every purple dot is a real methane plume NASA's EMIT instrument detected from the ISS.</small></div>
+ ${plumeMap('hunter',{w:720,r:1.3})}
+ ${nasaSources()}
+ <div class="sec"><h3>Crew</h3><small>1–4 players. Pass the device around: each role leads its own step.</small></div>
+ <div class="players">${[1,2,3,4].map(k=>`<button class="${S.n===k?'sel':''}" onclick="S.n=${k};render()">${k} player${k>1?'s':''}</button>`).join('')}</div>
+ <div class="flex">${Array.from({length:S.n},(_,i)=>`<input type="text" value="${esc(S.names[i])}" onchange="S.names[${i}]=this.value;render()">`).join('')}</div>
+ <div class="pill" style="margin-top:8px">${ROLES.map((r,i)=>`<b>${r.name}</b> (${esc(S.names[i%S.n])}): ${r.job}`).join('<br>')}</div>
+ <div class="sec"><h3>Tech tree</h3><small>Earn ★ reputation to unlock</small></div>
+ <div class="pill">${techList()}</div>
+ ${A.history.length?`<div class="sec"><h3>Mission history</h3></div><table>${A.history.slice(-8).reverse().map(h=>`<tr><td>${h.name}</td><td>${h.score} pts · ${'★'.repeat(h.stars)} · ${h.net>=0?'+':''}${money(h.net)}</td></tr>`).join('')}</table>`:''}
+ <div class="nav"><span></span>
+ <button class="btn" ${S.scen&&!defunded?'':'disabled'} onclick="go(1)">${S.creative?'Build it →':'Fund mission →'}</button></div>`;
+}
+let resetArm=false;
+function confirmReset(){ if(resetArm){resetArm=false;return true;} resetArm=true; render(); setTimeout(()=>{resetArm=false;},3000); const b=[...document.querySelectorAll('.btn.ghost')].pop(); if(b) b.textContent='Click again to confirm'; return false;}
+function openReset(){
+ const inFlight=S.step===5&&S.result&&!S.result.done;
+ const designing=S.step>=1&&S.step<=4;
+ const canWipe=S.step===0&&A.funds<START_FUNDS;
+ const wipeWhy=S.step!==0?'Only allowed at HQ.':A.funds>=START_FUNDS?`Only allowed when your treasury is under ${money(START_FUNDS)} (you have ${money(A.funds)}).`:`Erases all money, reputation, unlocks, and climate stats, and starts over at ${money(START_FUNDS)}.`;
+ const m=document.createElement('div'); m.className='modal'; m.id='resetModal';
+ m.onclick=e=>{if(e.target===m) closeReset();};
+ m.innerHTML=`<div class="box"><h2>Reset</h2><p class="pill">What do you want to reset?</p>
+  <button class="opt" ${designing?'':'disabled'} onclick="resetDesign()"><b>↺ Clear this spacecraft design</b><span>${designing?'Start this mission\'s design over from the spacecraft step. Your treasury and reputation stay the same.':'Only available while you\'re designing a mission.'}</span></button>
+  <button class="opt" ${S.step===0||inFlight?'disabled':''} onclick="closeReset();toHQ()"><b>⌂ Back to HQ</b><span>${inFlight?'You can\'t leave during flight.':'Drop this mission and pick another one. Nothing is spent unless you already launched.'}</span></button>
+  <button class="opt danger" id="wipeBtn" ${canWipe?'':'disabled'} onclick="wipeAll()"><b class="bad">⚠ Reset the whole agency</b><span>${wipeWhy}</span></button>
+  <div class="nav" style="margin-top:8px"><span></span><button class="btn ghost" onclick="closeReset()">Cancel</button></div></div>`;
+ document.body.appendChild(m);
+}
+function closeReset(){const m=document.getElementById('resetModal'); if(m) m.remove();}
+function resetDesign(){const sc=S.scen; defaults(); S.scen=sc; S.step=1; closeReset(); render(); window.scrollTo(0,0);}
+function wipeAll(){if(!(S.step===0&&A.funds<START_FUNDS)) return; const b=document.getElementById('wipeBtn');
+ if(!b.dataset.armed){b.dataset.armed='1';b.innerHTML='<b class="bad">⚠ Click again to confirm</b><span>Your saved progress will be deleted.</span>';return;}
+ clearInterval(simTimer); closeReset(); newAgency(); window.scrollTo(0,0);}
+function creativePanel(){
+ const types=Object.keys(RISK_NAMES);
+ return `<div class="colp" style="margin-bottom:16px;border-color:var(--ch4)">
+  <div class="label" style="color:var(--ch4)">Creative settings · saved in this browser</div>
+  <div class="sec" style="margin-top:8px"><h3>Accidents</h3><small>How often random alerts happen</small></div>
+  <div class="players">${ACC_LEVELS.map((l,i)=>`<button class="${S.acc.level===i?'sel':''}" onclick="S.acc.level=${i};saveCreative();render()">${['🚫','🌤','⚠️','🌪'][i]} ${l[0]}</button>`).join('')}</div>
+  <div class="sec"><h3>Which accidents</h3><small>Click to turn each one on or off</small></div>
+  <div class="players">${types.map(t=>`<button class="${S.acc.off[t]||S.acc.level===0?'':'sel'}" ${S.acc.level===0?'disabled':''} onclick="S.acc.off['${t}']=!S.acc.off['${t}'];saveCreative();render()">${RISK_NAMES[t]}</button>`).join('')}</div>
+  <div class="sec"><h3>Alert timer</h3><small>The 12-second countdown on alerts</small></div>
+  <div class="players"><button class="${S.timerOn?'sel':''}" onclick="S.timerOn=true;saveCreative();render()">⏱ On</button><button class="${S.timerOn?'':'sel'}" onclick="S.timerOn=false;saveCreative();render()">🧘 Off</button></div>
+  <div class="pill" style="margin-top:8px">You can also trigger any accident yourself during flight. Creative missions don't change your campaign's money, reputation, or stats.</div></div>`;
+}
+function newAgency(){A=fresh();save();S.scen=null;defaults();S.step=0;render();}
+function techList(){
+ const all=[...Object.values(PARTS).flat(),...INST,...SCEN].filter(o=>o.rep>0).sort((a,b)=>a.rep-b.rep);
+ return all.map(o=>`<span style="color:${unlocked(o)?'var(--ok)':'var(--dim)'}">${unlocked(o)?'✓':'🔒'} ★${o.rep} ${o.name}</span>`).join(' · ');
+}
+function pickScen(id){ if(S.scen!==id){S.scen=id;S.orbit=null;S.launch=null;} render(); }
+
+const CAT_ICON={power:'☀️',battery:'🔋',storage:'💾',comms:'📡',adcs:'🧭',engine:'🚀',structure:'🧱'};
+function partGroup(key,title,why){
+ return `<div class="sec"><h3>${CAT_ICON[key]||''} ${title}</h3><small>${why}</small></div><div class="cards">${PARTS[key].map(o=>{const lk=!unlocked(o);
+  return `<div class="card ${lk?'lock':''} ${S.sel[key]===o.id?'sel':''}" onclick="${lk?'':`S.sel['${key}']='${o.id}';render()`}">${lockLine(o)}<div class="t">${o.name}</div><div class="d">${o.d}</div>${stats(o)}</div>`}).join('')}</div>`;
+}
+const CRAFT_TABS=[['battery','Battery','Battery & power storage','Keeps the spacecraft running through shadow passes.'],
+ ['storage','Data','Data storage & processing','Holds data between ground passes. Radiation flips bits.'],['adcs','Pointing','Attitude control','Aiming at one gas well 500 km below takes fine pointing.'],
+ ['engine','Thruster','Propulsion','Higher Isp means less fuel for the same Δv.'],['structure','Frame','Structure','Holds all the parts together.']];
+function rCraft(){
+ const sc=find(SCEN,S.scen); if(!S.tab||!CRAFT_TABS.some(t=>t[0]===S.tab)) S.tab='battery';
+ const i=CRAFT_TABS.findIndex(t=>t[0]===S.tab), T=CRAFT_TABS[i], nxt=CRAFT_TABS[i+1];
+ $('main').innerHTML=`${roleTag()}<h2>Design the spacecraft</h2>
+ <p class="lead">Mission: <b>${sc.name}</b>. Every part adds mass, cost, and power draw, and you're spending your agency's own money. Pick a part in every category.</p>
+ <div class="builder"><div class="catnav">${CRAFT_TABS.map(t=>{const o=find(PARTS[t[0]],S.sel[t[0]]);return `<button class="${t[0]===S.tab?'on':''} ${o?'':'miss'}" onclick="S.tab='${t[0]}';render()"><b>${CAT_ICON[t[0]]} ${t[2]}</b><span>${o?o.name:'not chosen'}</span></button>`}).join('')}<div class="hint" style="color:var(--cyan)">☀️ Power: your agency's ${A.power} W solar array. Buy more at HQ.</div><div class="hint">Detectors and transmitters are on the next screen. Rockets and orbits come after that.</div></div><div>
+ <div class="tabs">${CRAFT_TABS.map(t=>`<button class="${t[0]===S.tab?'on':''} ${S.sel[t[0]]?'':'miss'}" onclick="S.tab='${t[0]}';render()">${CAT_ICON[t[0]]} ${t[1]}${S.sel[t[0]]?'<span class="ck">✓</span>':''}</button>`).join('')}</div>
+ ${partGroup(T[0],T[2],T[3]).replace('<div class="sec">','<div class="sec" style="margin-top:0">')}
+ ${nxt?`<div style="text-align:right;margin-top:12px"><button class="btn ghost" onclick="S.tab='${nxt[0]}';render();window.scrollTo(0,0)">Next: ${CAT_ICON[nxt[0]]} ${nxt[1]} →</button></div>`:''}
+ </div></div>
+ ${nav(['battery','storage','adcs'].every(k=>S.sel[k]),['battery','storage','adcs'].every(k=>S.sel[k])?'Next →':'Pick battery, data & pointing')}`;
+}
+function rPayload(){
+ const sc=find(SCEN,S.scen);
+ $('main').innerHTML=`${roleTag()}<h2>🔬 Choose the methane detectors</h2>
+ <p class="lead">Goal: <b>${sc.goal}</b> The detectors that match it are tagged ★. You need <b>${sc.target}</b> science points.</p>
+ <div class="why-box">How it works: methane absorbs shortwave-infrared light at specific wavelengths (around 1.65 and 2.3 µm). A spectrometer looks for those "missing" colors in sunlight reflected off the ground. More missing light means more methane.</div>
+ <div class="cards">${INST.map(i=>{const m=i.tags.some(t=>sc.tags.includes(t));const lk=!unlocked(i);return `<div class="card ${lk?'lock':''} ${S.inst.has(i.id)?'sel':''}" onclick="${lk?'':`togInst('${i.id}')`}">
+  ${lockLine(i)}<div class="t">${m?'★ ':''}${i.name}</div><div class="d">${i.d}</div>${stats(i)}</div>`}).join('')}</div>
+ ${partGroup('comms','Data transmitter','All of the data has to come down through this link. Radios only draw their full power about 25% of the time.')}
+ ${nav(S.inst.size>0&&S.sel.comms)}`;
+}
+function togInst(id){S.inst.has(id)?S.inst.delete(id):S.inst.add(id);render();}
+function rLaunch(){
+ const sc=find(SCEN,S.scen); const c=calc();
+ $('main').innerHTML=`${roleTag()}<h2>Pick the orbit and the rocket</h2>
+ <p class="lead">The orbit sets which methane sources you can see and how often. The burn needed to reach it (Δv) sets how much fuel you carry.</p>
+ <div class="sec"><h3>Orbit</h3></div>
+ <div class="cards">${sc.orbits.map(o=>`<div class="card ${S.orbit===o.id?'sel':''}" onclick="S.orbit='${o.id}';render()"><div class="t">${o.name}</div><div class="d">${o.d}</div>
+  <div class="stats"><b>Δv ${fmt(o.dv)} m/s</b><b>coverage ${fmt(o.sci*100)}%</b><b>shadow ${fmt(o.ecl*100)}%</b><b>contact ${o.contact} h/day</b>${o.radM>1?'<b>radiation ×'+o.radM+'</b>':''}</div></div>`).join('')}</div>
+ ${c&&c.orb&&c.dv>0?`<div class="why-box">Rocket equation: fuel = dry mass × (e<sup>Δv / (Isp·g)</sup> − 1) = <b>${kg(c.prop)}</b> of fuel for a ${kg(c.dry)} dry spacecraft. Launch mass is <b>${kg(c.wet)}</b>.</div>`:''}
+ <div class="sec"><h3>Launch vehicle</h3><small>${c&&c.orb?'Capacity to '+DEST_NAME[c.orb.dest]:''}</small></div>
+ <div class="cards">${LAUNCH.map(l=>{const cap=c&&c.orb?l.cap[c.orb.dest]:null; const fits=cap!==null&&cap>=(c?c.wet:0);
+  return `<div class="card ${S.launch===l.id?'sel':''}" onclick="S.launch='${l.id}';render()"><div class="t">${l.name}</div><div class="d">${l.d}</div>
+  <div class="stats"><b>${money(l.c)}</b>${cap!==null?`<b class="${fits?'ok':'bad'}">${kg(cap)}</b>`:''}</div></div>`}).join('')}</div>
+ ${nav(S.orbit&&S.launch)}`;
+}
+function rReview(){
+ const c=calc(); const ch=checks(c); const hard=ch.some(x=>x.hard&&x.lvl==='bad');
+ const allGo=S.votes.every(Boolean);
+ $('main').innerHTML=`<h2>Flight readiness review</h2>
+ <div class="sec" style="margin-top:4px"><h3>🍜 Team food budget</h3><small>The Agency Director decides how to feed mission control (${esc(playerFor('lead'))}). It's paid every month of the mission.</small></div>
+ <div class="cards">${FOOD.map(f=>`<div class="card ${S.food===f.id?'sel':''}" onclick="S.food='${f.id}';S.votes=S.votes.map(()=>false);render()"><div class="t">${f.name}</div><div class="d">${f.d}</div>
+  <div class="stats"><b>${money(f.c)}/month</b><b>${money(f.c*c.sc.months)} total</b><b>morale ${f.morale}%</b><b>science ×${f.sci}</b></div></div>`).join('')}</div>
+ <div class="sec"><h3>Readiness checks</h3></div>
+ <p class="lead">Every crew member has to vote GO before launch. <b>Only going over budget blocks the launch.</b> You can launch with other problems, but they'll hurt the mission in flight. The cost comes out of your treasury as soon as you launch.</p>
+ ${ch.map(x=>`<div class="chk"><div class="s ${x.lvl}">${x.lvl==='ok'?'✓':x.lvl==='info'?'ℹ':x.lvl==='warn'?'!':'✕'}</div><div><div class="${x.lvl==='ok'||x.lvl==='info'?'':x.lvl}">${x.txt}</div><div class="why">${x.why}</div></div></div>`).join('')}
+ <div class="sec"><h3>🎲 Accident odds</h3><small>Chance of each alert per month, based on your design, orbit, mission, and team. Change the design to change the odds.</small></div>
+ ${riskList(c,false)||'<p class="pill">Pick an orbit to see the odds.</p>'}
+ <div class="sec"><h3>Go / No-Go poll</h3>${hard?'<small class="bad">Launch is blocked: you can\'t afford this mission.</small>':ch.some(x=>x.lvl==='bad')?'<small class="warn">Launching with known problems is risky. Vote carefully.</small>':''}</div>
+ <div class="go">${S.votes.map((v,i)=>`<button class="${v?'yes':''}" ${hard?'disabled':''} onclick="S.votes[${i}]=!S.votes[${i}];render()">${esc(S.names[i])} (${ROLES.filter((_,k)=>k%S.n===i).map(r=>r.name).join(', ')}): ${v?'GO ✓':'vote GO'}</button>`).join('')}</div>
+ ${nav(!hard&&allGo,S.creative?'🚀 Launch (creative)':`🚀 Launch (−${money(c.cost)})`)}`;
+}
+
+// ===================== FLIGHT SIM =====================
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+let simTimer=null, anim=null;
+function rFlight(){
+ const c=calc(); const sc=c.sc;
+ if((!S.result||S.result.done)&&!S.creative){ S.launchFunds=A.funds; A.funds-=c.cost; save(); }
+ S.result={done:false};
+ $('main').innerHTML=`<h2>Mission in flight: ${sc.name}</h2><p class="lead">${c.orb.name}. You're mission control now. When an alert appears, the mission pauses until you respond. Choose quickly, before the timer runs out.</p>
+ <div class="flex" style="align-items:flex-start">
+  <svg id="orbitSvg" viewBox="0 0 240 240" width="240" height="240"></svg>
+  <div style="flex:1;min-width:240px">
+   <div class="meter"><div class="row"><span>Mission time</span><span id="mt">0 / ${sc.months} mo</span></div><div class="bar"><i id="mtb" style="width:0;background:var(--blue)"></i></div></div>
+   <div class="meter"><div class="row"><span>Spacecraft health</span><span id="hp">100%</span></div><div class="bar"><i id="hpb" style="width:100%"></i></div></div>
+   <div class="meter"><div class="row"><span>Science returned</span><span id="sv">0 / ${sc.target}</span></div><div class="bar"><i id="svb" style="width:0;background:var(--accent)"></i></div></div>
+   <div class="meter"><div class="row"><span>Team morale (${c.food.name})</span><span>${c.food.morale}%</span></div><div class="bar"><i style="width:${c.food.morale}%;background:${c.food.morale>=60?'var(--ok)':'var(--warn)'}"></i></div></div>
+   <div class="meter"><div class="row"><span>${sc.impact[0].toUpperCase()+sc.impact.slice(1)}</span><span id="em">0</span></div></div>
+  </div></div>
+ <div id="incident" class="incident" style="display:none"></div>
+ <div class="sec"><h3>🛰 Plumes you've measured</h3><small>Real NASA EMIT detections in your target area. They light up as your science grows.</small></div>
+ ${plumeMap(sc.id,{gid:'pmap',hidden:true,zoom:true,r:REGION[sc.id]?2.2:1.4})}
+ <div class="meter"><div class="row"><span>⚡ Power</span><span id="pw"></span></div></div>
+ ${S.creative?`<div class="sec"><h3>🎨 Trigger an accident</h3><small>Creative mode: make anything happen right now</small></div><div class="players">${Object.keys(RISK_NAMES).map(t=>`<button onclick="if(F&&!F.paused&&!(S.result&&S.result.done)){incident('${t}')}">${RISK_NAMES[t]}</button>`).join('')}</div>`:''}
+ <div class="sec"><h3>Mission log</h3></div><div class="log" id="log"></div>
+ <div class="sec"><h3>🎲 Live accident odds</h3><small>Updates as the spacecraft ages and you change settings</small></div><div id="riskbox">${riskList(c,false)}</div>
+ <div class="nav"><span></span><button class="btn" id="toReport" disabled onclick="go(1)">Mission report →</button></div>`;
+ drawOrbit(c); runSim(c);
+}
+function drawOrbit(c){
+ const svg=$('orbitSvg'); const id=c.orb.id;
+ const plumes=Array.from({length:7},(_,i)=>{const a=i*0.9+0.3;return `<circle cx="${120+40*Math.cos(a)}" cy="${120+40*Math.sin(a)}" r="0" fill="#7b3fc4" opacity=".75" class="plume"/>`}).join('');
+ let path;
+ if(id==='geo') path='<circle cx="120" cy="120" r="100" fill="none" stroke="#2d4363" stroke-dasharray="3 4"/>';
+ else if(id==='heo') path='<ellipse cx="120" cy="80" rx="55" ry="100" fill="none" stroke="#2d4363" stroke-dasharray="3 4"/>';
+ else path=`<ellipse cx="120" cy="120" rx="${id==='sso'?18:70}" ry="70" fill="none" stroke="#2d4363" stroke-dasharray="3 4"/>`;
+ svg.innerHTML=`<circle cx="120" cy="120" r="48" fill="#2d6aa8"/><path d="M90 100 q15 -12 30 0 t30 4 q-6 18 -24 16 q-20 10 -36 -20z" fill="#3f8a55" opacity=".85"/><circle cx="120" cy="120" r="51" fill="none" stroke="#7fb8ff" opacity=".25" stroke-width="3"/>
+ ${plumes}${path}<circle id="sc" r="6" fill="#4fc3f7" stroke="#0a1120" stroke-width="2"/><text x="120" y="234" fill="#8c9bb5" font-size="11" text-anchor="middle" font-family="JetBrains Mono">Earth · purple = methane plumes found</text>`;
+ let t=0; cancelAnimationFrame(anim);
+ const step=()=>{t+=0.03; const el=$('sc'); if(!el) return;
+  if(id==='geo'){el.setAttribute('cx',120+100*Math.cos(t*0.15));el.setAttribute('cy',120+100*Math.sin(t*0.15));}
+  else if(id==='heo'){el.setAttribute('cx',120+55*Math.cos(t));el.setAttribute('cy',80+100*Math.sin(t));}
+  else{el.setAttribute('cx',120+(id==='sso'?18:70)*Math.cos(t));el.setAttribute('cy',120+70*Math.sin(t));}
+  anim=requestAnimationFrame(step);}; step();
+}
+let F=null;
+const PLACES=['the Permian Basin','a Turkmenistan gas field','a Siberian pipeline','an Algerian oil field','a Canadian gas plant','a Mexican landfill'];
+function instVal(c,i){if(S.creative) return i.sci; const n=c.instNotes.find(x=>x.i.id===i.id);let v=i.sci*(n.match?1:0.3);if(n.blur)v*=0.4;return v*(n.pen||1);}
+function rates(){
+ const c=F.c; const act=c.insts.filter(i=>F.active.has(i.id));
+ const instP=c.insts.reduce((a,i)=>a+i.p,0)*DUTY;
+ const load=c.load-instP+act.reduce((a,i)=>a+i.p,0)*DUTY;
+ const margin=(c.gen-load)/load;
+ const dataGen=act.reduce((a,i)=>a+i.data,0)*c.cov*c.dm;
+ const down=c.rate*c.orb.contact*F.contactMult*3.6*F.wxMult;
+ const store=dataGen>0?Math.min(1,c.storeGb/(3*dataGen)):1;
+ const linkFrac=dataGen>0?Math.min(1,down/dataGen):1;
+ const frac=linkFrac*store;
+ const sciM=act.reduce((a,i)=>a+instVal(c,i),0)*c.cov*(0.25+0.75*frac)*c.food.sci*F.pointMult/c.sc.months;
+ if(S.creative){ const sciC=act.reduce((a,i)=>a+instVal(c,i),0)*c.cov*c.food.sci*F.pointMult/c.sc.months; return {load,margin:Math.max(margin,0.3),dataGen,down,frac:1,linkFrac:1,store:1,sciM:sciC,battNeed:0,battHave:1e9}; }
+ return {load,margin,dataGen,down,frac,linkFrac,store,sciM,battNeed:Math.max(0,load-c.rtg)*c.eclH,battHave:battWh(c,F.m)*0.8};
+}
+function say(t,cls=''){if(F&&F.inc) F.incCls=cls; const log=$('log'); if(!log) return; log.insertAdjacentHTML('beforeend',`<p class="${cls}">${t}</p>`);log.scrollTop=1e9;}
+function runSim(c){
+ clearInterval(simTimer); clearInterval(F&&F.cd);
+ F={c,hist:[[0,0,100]],events:[],m:0,hp:100,sci:0,errors:0,timeouts:0,handled:0,extra:0,active:new Set(c.insts.map(i=>i.id)),pointMult:1,contactMult:1,
+    nextFactor:1,wxMult:1,cellFail:false,battMode:null,radMode:null,flags:{},paused:false,R:rng(Date.now()&0xffffffff),
+    kpStart:Math.floor(Math.random()*Math.max(1,NASA_KP.length-c.sc.months)),stranded:!S.creative&&(!c.engineOk||c.wet>c.cap),hasPoint:S.inst.has('point')||S.inst.has('ctx')};
+ say(`T-0: Liftoff on ${c.L.name}. Launch mass ${kg(c.wet)}.`,'ok');
+ if(c.dv>0&&c.engineOk) say(`Orbit burn: ${fmt(c.dv)} m/s using ${kg(c.prop)} of fuel. Now in ${c.orb.name}.`);
+ if(F.stranded) say(c.wet>c.cap?`⚠ The rocket ran out of performance. It released the spacecraft ${kg(c.wet-c.cap)} overweight, short of the target orbit.`:`⚠ No engine, so the spacecraft can't leave the drop-off orbit.`,'bad');
+ say(F.stranded?'Operating from the wrong orbit. Coverage of the targets is poor.':'Calibration complete. The first methane spectra are coming in.');
+ say(`📅 Mission clock starts in <b>${fmtYM(NASA_KP[F.kpStart][0])}</b>. Space weather replays real NASA OMNI data from that month on. Clouds follow NASA POWER climatology.`,'');
+ say('<b>Mission control is on duty.</b> When an alert pops up, choose a response before the timer runs out.','');
+ simTimer=setInterval(tick,Math.max(180,7000/c.sc.months));
+}
+function tick(){
+ if(!F||F.paused) return;
+ const c=F.c, sc=c.sc, R=F.R; let r=rates();
+ // design problems you have to deal with yourself
+ if(r.margin<0&&!F.flags.power){F.flags.power=1;return incident('power');}
+ if(c.eclH>0&&!c.rtg&&r.battHave<r.battNeed&&!F.flags.batt){F.flags.batt=1;return incident('batt');}
+ if(c.radHave<c.radNeed&&!F.flags.rad){F.flags.rad=1;return incident('rad');}
+ if(r.dataGen>0&&r.linkFrac<0.5&&!F.flags.data){F.flags.data=1;return incident('data');}
+ F.m++; const m=F.m;
+ let factor=(F.stranded?0.3:1)*F.nextFactor; F.nextFactor=1; F.wxMult=1;
+ if(m<=c.delay){factor=0; if(m===1) say(`M1: 🌀 The electric thruster is slowly spiraling up to the target orbit (${c.delay} month${c.delay>1?'s':''}).`,''); if(m===c.delay) say(`M${m}: 🌀 Arrived in ${c.orb.name}. Science operations begin!`,'ok');}
+ if(r.margin<0){factor*=0.2;F.hp-=3; if(m%6===1) say(`M${m}: ⚠ Brownouts: there isn't enough power, so instruments keep cutting out.`,'warn');}
+ if(c.eclH>0&&!c.rtg&&r.battHave<r.battNeed){ if(F.battMode==='eclipse') factor*=0.85; else F.hp-=1.5; }
+ const b=c.p.battery; if(b&&b.dod&&c.eclH>0&&r.battNeed>b.wh*b.dod) F.hp-=0.4;
+ if(b&&b.fade&&m===13) say(`M13: 🔋 The NiCd pack has faded to ${fmt(battWh(c,m))} Wh.`,'warn');
+ const def=Math.max(0,c.radNeed-c.radHave);
+ if(def>0){ if(F.radMode==='scrub'){factor*=0.9;F.hp-=def*1.2+R()*def;} else {F.hp-=def*3+R()*def*3; if(m%6===1) say(`M${m}: ☢ More memory errors from radiation.`,'warn');} }
+ { const lm=liveMonth(), cf=cloudFrac(sc.id,lm), act=c.insts.filter(i=>F.active.has(i.id)); if(!(S.creative&&(S.acc.level===0||S.acc.off.cloud))) factor*=1-daySciShare(c,act)*cf*(c.cloudMask?0.15:0.4);
+   const kpE=liveKp(); if(kpE&&kpE[1]>=6) say(`M${m}: 🌐 Stormy space weather in ${fmtYM(kpE[0])}: Kp ≥ 5 on ${kpE[1]} days (NASA OMNI).`,'warn'); }
+ F.hp=Math.max(0,F.hp); F.sci+=r.sciM*factor*(F.hp>0?1:0); F.hist.push([m,F.sci,F.hp]);
+ updateFlight();
+ if(F.hp<=0||m>=sc.months){
+  clearInterval(simTimer);
+  if(F.hp<=0) say(`M${m}: ✕ Lost contact. The mission ended early.`,'bad'); else say(`M${m}: ✓ Primary mission complete!`,'ok');
+  S.result={sci:F.sci,months:m,hp:F.hp,survived:F.hp>0,c,done:true,errors:F.errors,timeouts:F.timeouts,handled:F.handled,extra:F.extra,hist:F.hist,events:F.events,retask:!!F.flags.retask};
+  settle(); hud(); $('toReport').disabled=false; return;
+ }
+ // random incidents
+ const x=R(); let acc=0;
+ for(const it of risks(c,true)){acc+=it.p; if(x<acc) return incident(it.t);}
+ if(m%3===0&&$('riskbox')) $('riskbox').innerHTML=riskList(c,true);
+}
+function updateFlight(){
+ const sc=F.c.sc; if(!$('mt')) return;
+ $('mt').textContent=`${F.m} / ${sc.months} mo`; $('mtb').style.width=(F.m/sc.months*100)+'%';
+ $('hp').textContent=fmt(F.hp)+'%'; const hb=$('hpb'); hb.style.width=F.hp+'%'; hb.style.background=F.hp>60?'var(--ok)':F.hp>30?'var(--warn)':'var(--bad)';
+ $('sv').textContent=`${fmt(F.sci)} / ${sc.target}`; $('svb').style.width=Math.min(100,F.sci/sc.target*100)+'%';
+ $('em').textContent=fmt(F.sci*sc.emit);
+ const r=rates(); $('pw').textContent=`${fmt(F.c.gen)} W made / ${fmt(r.load)} W used`; $('pw').className=r.margin<0?'bad':'';
+ { const g=$('pmap'); if(g&&g.children){ const n=Math.floor(g.children.length*Math.min(1,F.sci/sc.target)); for(let i=0;i<n;i++) g.children[i].setAttribute('opacity','.8'); } }
+ document.querySelectorAll('.plume').forEach((p,i)=>p.setAttribute('r',Math.min(6,Math.max(0,F.sci/sc.target*7-i))));
+}
+function incident(type){
+ const c=F.c, R=F.R, m=F.m; F.paused=true;
+ const fine=c.p.adcs&&c.p.adcs.fine, eng=c.p.engine&&c.p.engine.isp>0&&!c.engineMissingReq, gentle=c.p.engine&&c.p.engine.gentle, cloud=c.cloudMask, radOk=c.radHave>=c.radNeed||(c.p.storage&&c.p.storage.tmr);
+ let I;
+ if(type==='power') return powerIncident();
+ if(type==='storm') I={icon:'☀',title:'Solar storm warning',text:'A burst of energetic particles from the Sun hits in a few hours.',def:1,opts:[
+  {l:'Go to safe mode',s:'Turn the instruments off and wait it out. You lose most of this month\'s science.',go:()=>{F.nextFactor*=0.3;say(`M${m}: ☀ You chose safe mode and the spacecraft rode out the storm unharmed.`,'ok');}},
+  {l:'Keep observing',s:radOk?'Your hardened electronics can probably take it.':'Risky: your electronics aren\'t protected well enough.',go:()=>{F.hp-=radOk?4:16;say(`M${m}: ☀ The storm hit while you were observing.${radOk?' Only minor damage.':' The computer reset and the spacecraft was damaged.'}`,radOk?'warn':'bad');}}]};
+ if(type==='wheel') I={icon:'⚙',title:'Reaction wheel failure',text:'One of the wheels that points the spacecraft has jammed.',def:-1,
+  timeout:()=>{F.hp-=12;F.pointMult*=0.5;say(`M${m}: ⚙ Nobody responded and the spacecraft started tumbling. It's damaged and pointing is worse from now on.`,'bad');},opts:[
+  {l:'Switch to the spare wheel',s:fine?'Your fine-pointing system has a spare.':'You don\'t have a spare. Only the fine-pointing system has one.',dis:!fine,go:()=>say(`M${m}: ⚙ The spare wheel spun up and pointing is back to normal.`,'ok')},
+  {l:'Try to restart the jammed wheel',s:'50/50: it might come back, or it might make things worse.',go:()=>{if(R()<0.5)say(`M${m}: ⚙ The restart worked and the wheel is spinning again!`,'ok');else{F.hp-=10;F.pointMult*=0.7;say(`M${m}: ⚙ The restart failed and the wheel was damaged further.`,'bad');}}},
+  {l:'Fly on with fewer wheels',s:'Safe, but pointing is worse for the rest of the mission.',go:()=>{F.pointMult*=0.65;say(`M${m}: ⚙ Flying with reduced pointing.`,'warn');}}]};
+ if(type==='debris') I={icon:'☄',title:'Collision warning',text:'A piece of an old rocket will pass within 150 m in 6 hours. Chance of a hit: 1 in 4.',def:1,opts:[
+  {l:'Fire thrusters to dodge',s:!eng?'You have no working thruster, so you can\'t move.':gentle?'The electrospray\'s push is too gentle to dodge in 6 hours.':'Uses a little fuel and costs a few days of observing.',dis:!eng||gentle,go:()=>{F.nextFactor*=0.85;say(`M${m}: ☄ You dodged the debris!`,'ok');}},
+  {l:'Take the risk',s:'Keep observing and hope it misses.',go:()=>{if(R()<0.25){F.hp-=25;say(`M${m}: ☄ Impact! The debris hit the spacecraft.`,'bad');}else say(`M${m}: ☄ It missed by 90 m. Lucky.`,'warn');}}]};
+ if(type==='cloud') I={icon:'☁',title:'Cloudy season',text:'Thick clouds are covering your main targets. Methane sensors can\'t see through clouds.',def:1,opts:[
+  {l:'Move to clear-sky targets',s:cloud?'Your onboard processor\'s cloud mask shows where the sky is clear.':'You need a cloud-masking processor (SpaceCube v3.0 or Unibap) to find clear skies.',dis:!cloud,go:()=>{F.nextFactor*=0.95;say(`M${m}: ☁ You moved to clear-sky targets and the data stays good.`,'ok');}},
+  {l:'Stick to the plan',s:'Most of the measurements will be wasted on clouds.',go:()=>{F.nextFactor*=cloud?0.75:0.4;say(`M${m}: ☁ A cloudy month, and most of the measurements were lost.`,'warn');}}]};
+ if(type==='oper'){F.errors++; I={icon:'😴',title:'Bad command uploaded!',text:`A tired operator (morale ${c.food.morale}%) sent the wrong command, and the spacecraft is slowly tumbling.`,def:-1,
+  timeout:()=>{F.hp-=6;F.nextFactor*=0.2;say(`M${m}: 😴 No one caught the mistake in time. The spacecraft spent the month in safe mode.`,'bad');},opts:[
+  {l:'Send recovery commands now',s:'Stabilize the spacecraft yourself. You lose a few days.',go:()=>{F.nextFactor*=0.75;say(`M${m}: 😴 You fixed the mistake quickly. Good catch.`,'ok');}},
+  {l:'Let the automatic safe mode take over',s:'Safe, but slow. It takes most of the month to recover.',go:()=>{F.nextFactor*=0.3;F.hp-=2;say(`M${m}: 😴 Safe mode kicked in. Most of the month was lost.`,'warn');}}]};}
+ if(type==='blowout'){const rp=regionPlumes(c.sc.id); const pp=rp.length?rp[Math.floor(R()*rp.length)]:null; const pl=pp?fmtLatLon(pp[0],pp[1]):'the Siberian permafrost'; I={icon:'🔥',title:pp?`Methane plume at ${pl}!`:'Permafrost methane burst!',text:pp?`NASA EMIT spotted a methane plume at this spot on ${fmtDate(pp[2])}. It's leaking again, and your satellite could measure it.`:'A crater-forming methane burst was reported in Siberia. Your satellite could measure it.',def:1,opts:[
+  {l:'Point the satellite at the leak',s:F.hasPoint?'Your point-source instruments can measure exactly how big the plume is.':'Your instruments are too coarse to measure it well, but you\'ll get some data.',go:()=>{F.flags.retask=1;F.nextFactor*=F.hasPoint?1.7:1.25;say(`M${m}: 🔥 You measured the plume${F.hasPoint?', and regulators ordered the well shut within days':''}!`,'ok');}},
+  {l:'Stay on the planned schedule',s:'Stick to your normal observations.',go:()=>say(`M${m}: 🔥 Another satellite caught the blowout instead.`,'')}]};}
+ if(type==='drift') I={icon:'🧭',title:'Magnetorquers lost lock',text:'The spacecraft is slowly drifting off target. Magnetorquers can only push against Earth\'s weak magnetic field.',def:1,opts:[
+  {l:'Run a detumble and re-point',s:'Takes about half a month, then pointing is back to normal.',go:()=>{F.nextFactor*=0.5;say(`M${m}: 🧭 Detumbled and back on target.`,'ok');}},
+  {l:'Keep observing while drifting',s:'Pointing is a bit worse for the rest of the mission.',go:()=>{F.pointMult*=0.85;say(`M${m}: 🧭 Observing while drifting. The data is blurrier.`,'warn');}}]};
+ if(type==='crash'){const uhf=c.p.comms&&c.p.comms.id==='c_uhf'; I={icon:'💾',title:'Computer crash!',text:`A bit flip crashed the flight software on your ${c.p.storage.name}.`,def:-1,
+  timeout:()=>{F.hp-=10;F.nextFactor*=0.3;say(`M${m}: 💾 Nobody responded, so the spacecraft sat frozen until the watchdog timer reset it. Damage and lost time.`,'bad');},opts:[
+  {l:'Reboot into the backup software image',s:'Fast recovery. You lose a few days.',go:()=>{F.nextFactor*=0.8;say(`M${m}: 💾 Rebooted. Everything's running again.`,'ok');}},
+  {l:'Upload a fresh software patch',s:uhf?'A UHF link is too slow to upload a patch.':'Fixes the bug for good and lowers future crash risk, but costs most of the month.',dis:uhf,go:()=>{F.nextFactor*=0.4;F.patched=(F.patched||0)+1;say(`M${m}: 💾 Patch installed. The software is more robust now.`,'ok');}}]};}
+ if(type==='thermal') I={icon:'🌡',title:'Overheating!',text:`The spacecraft is producing ${fmt(rates().load,1)} W of heat in a ${kg(c.dry)} body. Temperatures are climbing toward the red line.`,def:1,opts:[
+  {l:'Throttle instruments for a month',s:'Lets the spacecraft cool down. You lose half a month of science.',go:()=>{F.nextFactor*=0.5;say(`M${m}: 🌡 Throttled down and the temperatures are back to normal.`,'ok');}},
+  {l:'Push through the heat',s:'Keep observing and risk damaging the electronics.',go:()=>{F.hp-=12;say(`M${m}: 🌡 The heat damaged some electronics.`,'bad');}}]};
+ if(type==='battfault') I={icon:'🔋',title:'Battery voltage dropping',text:'The aging battery can barely hold its charge through the shadow passes.',def:1,opts:[
+  {l:'Cut power use during eclipses',s:'Instruments turn off in shadow from now on (about −15% science).',go:()=>{F.battMode='eclipse';say(`M${m}: 🔋 Eclipse load-shedding is on.`,'ok');}},
+  {l:'Keep going',s:'The battery could brown out and damage the spacecraft.',go:()=>{F.hp-=8;say(`M${m}: 🔋 A brownout during eclipse damaged the spacecraft.`,'bad');}}]};
+ if(type==='cell'){F.flags.cell=1; I={icon:'🔥',title:'Battery cell failure!',text:'One cell in the experimental solid-state pack is overheating.',def:1,opts:[
+  {l:'Isolate the failed cell',s:'Safe, but you permanently lose half the battery capacity.',go:()=>{F.cellFail=true;say(`M${m}: 🔋 The cell is isolated. Battery capacity is now ${fmt(battWh(c,m))} Wh.`,'warn');}},
+  {l:'Keep using it',s:'Keeps full capacity, but there\'s a 40% chance of thermal runaway.',go:()=>{if(R()<0.4){F.hp-=30;F.cellFail=true;say(`M${m}: 🔥 Thermal runaway! The pack damaged the spacecraft.`,'bad');}else say(`M${m}: 🔋 The cell cooled down. Lucky.`,'warn');}}]};}
+ if(type==='gswx'){const w=c.p.comms.wx==='rain'; const cost=Math.round(Math.max(5,c.sc.ops*2)); I={icon:w?'⛈':'☁',title:w?'Rain fade at the ground station':'Clouds over the laser ground station',text:w?'A thunderstorm over your Ka-band ground station is blocking the downlink.':'Thick clouds are blocking your laser link to the optical telescope.',def:1,opts:[
+  {l:`Switch to a backup ground station (−${money(cost)})`,s:A.funds>=cost?'Rent time at another site with clear weather. Paid from your treasury now.':'You can\'t afford it.',dis:A.funds<cost,go:()=>{if(!S.creative){A.funds-=cost;F.extra+=cost;}save();hud();say(`M${m}: 📡 You switched to a backup station and the data is flowing.`,'ok');}},
+  {l:'Wait for the weather to clear',s:'Data piles up and some gets overwritten this month.',go:()=>{F.wxMult=0.3;F.nextFactor*=0.7;say(`M${m}: ${w?'⛈':'☁'} Downlink outage. Some data was lost.`,'warn');}}]};}
+ if(type==='batt') I={icon:'🔋',title:'Battery will run out in shadow',text:`Each pass through Earth's shadow needs ${fmt(rates().battNeed,1)} Wh, but your battery gives only ${fmt(rates().battHave,1)} Wh.`,def:1,opts:[
+  {l:'Turn instruments off in shadow',s:'Saves the battery, but you lose about 15% of your science.',go:()=>{F.battMode='eclipse';say(`M${m}: 🔋 Instruments now turn off during shadow passes. The battery is safe.`,'ok');}},
+  {l:'Keep everything running',s:'The battery drains deep every orbit and the spacecraft wears out faster.',go:()=>{F.battMode='run';say(`M${m}: 🔋 Running everything through shadow. The battery is wearing out.`,'warn');}}]};
+ if(type==='rad') I={icon:'☢',title:'Radiation is corrupting memory',text:`Radiation exposure is ${fmt(c.radNeed,1)}, but your ${c.p.storage.name} only handles ${fmt(c.radHave,1)}. Bits are flipping in memory.`,def:1,opts:[
+  {l:'Scrub memory and reboot regularly',s:'Cuts the damage by more than half, but costs about 10% of your science time.',go:()=>{F.radMode='scrub';say(`M${m}: ☢ Memory scrubbing is on.`,'ok');}},
+  {l:'Ignore it',s:'Keep observing at full speed and accept the damage.',go:()=>{F.radMode='ignore';say(`M${m}: ☢ Ignoring the radiation errors.`,'warn');}}]};
+ if(type==='data'){const r=rates(); const cost=Math.round(Math.max(10,c.sc.months*2)); I={icon:'📡',title:'Data backlog',text:`You're collecting ${fmt(r.dataGen,1)} Gb/day but can send only ${fmt(r.down,1)} Gb/day. Data is piling up on board.`,def:1,opts:[
+  {l:`Rent more ground-station passes (−${money(cost)})`,s:A.funds>=cost?'Triples your contact time. Paid from your treasury right now.':'You can\'t afford it.',dis:A.funds<cost,go:()=>{if(!S.creative){A.funds-=cost;F.extra+=cost;}F.contactMult=3;save();hud();say(`M${m}: 📡 You rented extra antennas. The backlog is clearing.`,'ok');}},
+  {l:'Delete the overflow',s:'Data that doesn\'t fit gets thrown away.',go:()=>say(`M${m}: 📡 Overflow data is being deleted.`,'warn')}]};}
+ I.type=type; I.fact=FACTS[type]; I.kind=['batt','rad','data'].includes(type)?'Design problem':type==='blowout'?'Opportunity':'Emergency';
+ showIncident(I);
+}
+const FACTS={
+ storm:'The May 2024 "Gannon" storm was the strongest in two decades. Extra drag from the swollen upper atmosphere made thousands of satellites fire their thrusters to stay up.',
+ wheel:'Two failed reaction wheels ended the original Kepler mission in 2013. Engineers rescued it as "K2", using the pressure of sunlight to help keep it steady.',
+ drift:'Most CubeSats use magnetorquers because they are tiny and have no moving parts, but they can only push against Earth\'s weak magnetic field.',
+ debris:'The International Space Station has dodged space debris dozens of times since 1999.',
+ cloud:'About two-thirds of Earth is covered by clouds at any moment, so methane satellites have to throw away most of their cloudy pixels.',
+ oper:'In 1999 NASA lost the Mars Climate Orbiter because one team used imperial units and another used metric.',
+ blowout:'Within weeks of starting work in 2022, NASA\'s EMIT instrument on the ISS found more than 50 methane super-emitters.',
+ gswx:'Ka-band radio can lose much of its signal in heavy rain, so missions plan backup ground stations in drier places.',
+ cell:'A lithium cell that overheats can set off "thermal runaway" in its neighbors, which is why space batteries go through strict safety tests.',
+ crash:'Cosmic rays can flip single bits in computer memory. Radiation-tolerant computers use error-correcting memory to catch and fix them.',
+ thermal:'In space there is no air to carry heat away, so spacecraft get rid of it by radiating it into space through radiator panels.',
+ battfault:'Hubble\'s original nickel-hydrogen batteries lasted 18 years before astronauts replaced them in 2009.',
+ batt:'A satellite in low Earth orbit passes through Earth\'s shadow about 15 times a day, and every pass runs on battery power.',
+ rad:'Over the South Atlantic Anomaly, the radiation belts dip close to Earth, and many satellites have glitches there.',
+ data:'In 2022 NASA\'s TBIRD laser terminal sent data down from a CubeSat at a record 200 gigabits per second.'};
+function incStrip(kind,right){return `<div class="inc-strip"><span>${kind} · Month ${F?F.m:0} of ${F?F.c.sc.months:0}</span><span>${right}</span></div>`;}
+function showIncident(I){
+ if(S.creative) I.opts.forEach(o=>{if(o.dis){o.s='🎨 Allowed in creative mode. '+o.s;o.dis=false;}});
+ const box=$('incident'); const T=12; let left=T; const timed=!(S.creative&&!S.timerOn);
+ box.style.display='flex';
+ box.innerHTML=`<div class="inc-box">${incStrip(I.kind||'Alert','Choose one')}<div class="inc-body"><div class="inc-h"><span class="inc-i">${I.icon}</span><div><h3>${I.title}</h3><div class="pill">${I.text}</div></div></div>
+  <div class="inc-opts">${I.opts.map((o,i)=>`<button class="opt" ${o.dis?'disabled':''} onclick="resolveInc(${i})"><b>${o.l}</b><span>${o.s}</span></button>`).join('')}</div>
+  ${I.fact?`<div class="fact"><span class="label">Real-world fact</span>${I.fact}</div>`:''}
+  <div class="row pill" style="display:flex;justify-content:space-between"><span>${timed?'Choose a response before time runs out':'Creative mode: no timer, take your time'}</span><span id="cdT">${timed?T+'s':''}</span></div>${timed?'<div class="bar"><i id="cdB" style="width:100%;background:var(--accent)"></i></div>':''}</div></div>`;
+ F.inc=I;
+ if(timed) F.cd=setInterval(()=>{left-=0.1; const b=$('cdB'); if(b) b.style.width=(left/T*100)+'%'; const t=$('cdT'); if(t) t.textContent=Math.ceil(left)+'s';
+  if(left<=0){clearInterval(F.cd); F.timeouts++; F.lastTimeout=true; say(`⏱ Time ran out on "${I.title}".`,'bad'); if(I.timeout) I.timeout(); else I.opts[I.def].go(); closeIncident();}},100);
+ box.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function resolveInc(i){const I=F.inc; if(!I||I.opts[i].dis) return; clearInterval(F.cd); F.handled++; I.opts[i].go(); closeIncident();}
+function closeIncident(){if(F&&F.inc&&F.events){F.events.push({m:F.m,icon:F.inc.icon,title:F.inc.title,type:F.inc.type,cls:F.incCls||'',timeout:!!F.lastTimeout});} F.incCls='';F.lastTimeout=false; const box=$('incident'); box.style.display='none'; box.innerHTML=''; F.inc=null; F.hp=Math.max(0,F.hp); updateFlight(); F.paused=false;}
+function powerIncident(){
+ const c=F.c, box=$('incident'); box.style.display='flex';
+ const draw=()=>{const r=rates();
+  box.innerHTML=`<div class="inc-box">${incStrip('Design problem','No timer')}<div class="inc-body"><div class="inc-h"><span class="inc-i">⚡</span><div><h3>Power deficit!</h3><div class="pill">The spacecraft uses more power than the panels make. Turn instruments off until the balance is positive, or put up with brownouts.</div></div></div>
+  <div class="cards" style="margin:10px 0">${c.insts.map(i=>`<div class="card ${F.active.has(i.id)?'sel':''}" onclick="togActive('${i.id}')"><div class="t">${F.active.has(i.id)?'🟢 ON':'⚫ OFF'} · ${i.name}</div><div class="stats"><b>${fmt(i.p*DUTY,1)} W avg</b><b>science ${fmt(instVal(c,i))}</b></div></div>`).join('')}</div>
+  <div class="meter"><div class="row"><span>Power balance</span><span class="${r.margin<0?'bad':'ok'}">${fmt(c.gen)} W made − ${fmt(r.load)} W used = ${r.margin<0?'':'+'}${fmt(c.gen-r.load)} W</span></div></div>
+  <div class="nav"><button class="btn ghost" onclick="powerDone(false)">Accept brownouts (keep everything on)</button><button class="btn" ${r.margin<0||F.active.size===0?'disabled':''} onclick="powerDone(true)">Confirm power plan</button></div></div></div>`;};
+ F.drawPower=draw; draw(); box.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function togActive(id){F.active.has(id)?F.active.delete(id):F.active.add(id); F.drawPower(); updateFlight();}
+function powerDone(ok){ if(F.events) F.events.push({m:F.m,icon:'⚡',title:'Power deficit',type:'power',cls:ok?'ok':'warn',timeout:false});
+ if(ok){F.handled++; const off=F.c.insts.filter(i=>!F.active.has(i.id)).map(i=>i.name); say(`⚡ Power plan confirmed. Turned off: ${off.join(', ')}.`,'ok');}
+ else{F.c.insts.forEach(i=>F.active.add(i.id)); say('⚡ Running everything. Brownouts will cut the science.','warn');}
+ closeIncident();
+}
+
+// ===================== SCORING & PAYOUT =====================
+function scoreOf(res){
+ const {sci,months,survived,c}=res; const sc=c.sc;
+ const sSci=Math.min(60,60*sci/sc.target);
+ const pm=c.margin; const sPow=pm<0?0:pm<0.1?5:10; // spare power is never penalised: the array is agency-owned
+ const mm=(c.cap-c.wet)/c.cap; const sMass=mm>=0.1?10:mm>=0?4:0;
+ const sSurv=20*months/sc.months*(survived?1:0.6);
+ const total=Math.round(sSci+sPow+sMass+sSurv);
+ const stars=total>=90?3:total>=75?2:total>=60?1:0;
+ return {sSci,sPow,sMass,sSurv,total,stars,pm,mm};
+}
+function settle(){
+ const res=S.result, c=res.c, sc=c.sc, s=scoreOf(res);
+ if(S.creative){ S.payout={grant:0,emitters:Math.round(res.sci*sc.emit),mt:res.sci*sc.mt,newStars:0,unlocks:[],first:true,cost:c.cost,creative:true}; return; }
+ const repBefore=A.rep;
+ const first=!A.cleared[sc.id];
+ const base=sc.reward*(first?1:0.6);
+ const grant=Math.round(base*Math.pow(s.total/100,1.5)*(res.survived?1:0.6));
+ const emitters=Math.round(res.sci*sc.emit), mt=res.sci*sc.mt;
+ A.funds+=grant; A.missions++;
+ if(sc.impact==='super-emitters') A.emitters+=emitters;
+ A.mt+=mt;
+ const prevBest=A.best[sc.id]||0;
+ const newStars=Math.max(0,s.stars-(A.cleared[sc.id]||0));
+ A.rep+=newStars; A.cleared[sc.id]=Math.max(A.cleared[sc.id]||0,s.stars);
+ A.best[sc.id]=Math.max(prevBest,s.total);
+ A.history.push({name:sc.name,score:s.total,stars:s.stars,net:grant-c.cost-(res.extra||0)});
+ const unlocks=[...Object.values(PARTS).flat(),...INST,...SCEN].filter(o=>o.rep>repBefore&&o.rep<=A.rep);
+ S.payout={grant,emitters,mt,newStars,unlocks,first,cost:c.cost+(res.extra||0)};
+ save();
+}
+
+// ===================== REPORT =====================
+function rReport(){
+ const res=S.result, c=res.c, sc=c.sc, s=scoreOf(res), P=S.payout;
+ const lessons=[];
+ if(c.wet>c.cap) lessons.push(`<b>Too heavy for the rocket.</b> You were ${kg(c.wet-c.cap)} over, so you ended up in the wrong orbit. Use a bigger rocket or cut mass.`);
+ if(!c.engineOk) lessons.push(c.engineMissingReq?`<b>Thruster couldn't fire.</b> The Hall thruster needs a Space-Grade VES battery.`:`<b>No thruster.</b> Getting to your orbit took ${fmt(c.dv)} m/s of Δv, and you had no way to make the burn.`);
+ if(c.delay) lessons.push(`<b>Slow electric transfer.</b> You spent ${c.delay} month${c.delay>1?'s':''} spiraling up with no science. Chemical or dual-mode thrusters get there faster.`);
+ if(res.timeouts) lessons.push(`<b>Missed alerts: ${res.timeouts}.</b> When nobody responds in time, the spacecraft takes the worst outcome.`);
+ if(res.errors) lessons.push(`<b>Operator mistakes: ${res.errors}.</b> Your team ate ${c.food.name.toLowerCase()}. Better food means fewer mistakes.`);
+ if(c.dataFrac<0.5) lessons.push(`<b>Data bottleneck.</b> Only ${fmt(c.dataFrac*100)}% of your data reached the ground. Try onboard processing or a faster transmitter.`);
+ if(c.storeFrac<1) lessons.push(`<b>Storage overflow.</b> Your ${c.p.storage.name} could only hold ${fmt(c.storeGb/c.dataGen,1)} days of data.`);
+ if(c.margin<0.1) lessons.push(`<b>Power was too tight</b> (${fmt(c.margin*100)}% margin). Buy more watts at HQ.`);
+ if(c.radHave<c.radNeed) lessons.push(`<b>Radiation damage.</b> Use radiation-tolerant storage like the SpaceCube or M4 for high orbits.`);
+ if(c.p.battery&&c.p.battery.fade&&sc.months>12) lessons.push(`<b>NiCd fade.</b> Old nickel-cadmium cells lose capacity fast. Fine for short tests, bad for long missions.`);
+ if(!c.cloudMask&&c.insts.some(i=>i.day)&&c.cloudLoss>0.03) lessons.push(`<b>Clouds cost you about ${fmt(c.cloudLoss*100)}%.</b> Onboard cloud masking, like EMIT's, saves science.`);
+ if(c.instNotes.some(n=>!n.match)) lessons.push(`<b>Detector mismatch.</b> Every detector should serve the mission goal.${sc.id==='arctic'?' In the polar night, only thermal-IR or laser detectors work.':''}`);
+ if(c.instNotes.some(n=>n.blur)) lessons.push(`<b>Pointing mismatch.</b> Zoom spectrometers and lidar need reaction wheels with a star tracker.`);
+ if(!lessons.length) lessons.push('<b>A clean design.</b> Nothing to fix. Try a harder mission or a cheaper build.');
+ const rank=s.total>=90?'Guardian of Earth':s.total>=75?'Methane Hunter':s.total>=60?'Field Scientist':'Rookie Agency';
+ const head=!res.survived?'Signal lost.':s.total>=90?'You helped save the planet.':s.total>=75?'Mission accomplished.':'Mission complete.';
+ const sub=!res.survived?`Contact lost in month ${res.months} of ${sc.months}. The data you did send still counts.`:s.stars===3?`Every system held, and the methane data poured in.`:`The mission ran its full ${sc.months} months.`;
+ const ev=res.events||[], hist=res.hist||[[0,0,100],[res.months,res.sci,res.hp]];
+ const fundsBefore=S.launchFunds||A.funds;
+ // achievements
+ const ach=[
+  ['🛡','Flawless','Finished with 100% health',res.survived&&res.hp>=99.5],
+  ['🎧','Mission Control Pro','Handled 3+ alerts and missed none',(res.handled||0)>=3&&!res.timeouts],
+  ['🌊','Data Firehose','100% of the data reached the ground',c.dataFrac>=0.99],
+  ['🔥','Plume Chaser','Pointed the satellite at a real leak',!!res.retask],
+  ['☀️','Storm Rider','Got through a solar storm unharmed',ev.some(e=>e.type==='storm'&&e.cls==='ok')],
+  ['🚀','Overachiever','Returned 150% of the science goal',res.sci>=sc.target*1.5],
+  ['💰','Thrifty','Spent under 60% of the treasury',!S.creative&&c.cost<=fundsBefore*0.6],
+  ['🩹','Survivor','Finished with under 30% health',res.survived&&res.hp<30],
+  ['🍲','Well Fed','Kept team morale at 88% or more',c.food.morale>=88]];
+ const got=ach.filter(a=>a[3]).length;
+ // chart
+ const W=640,H=200,PL=34,PR=34,PT=26,PB=24, maxS=Math.max(sc.target*1.15,res.sci*1.05,1);
+ const X=m=>PL+(W-PL-PR)*m/sc.months, YS=v=>PT+(H-PT-PB)*(1-v/maxS), YH=v=>PT+(H-PT-PB)*(1-v/100);
+ const sciPath=hist.map((h,i)=>`${i?'L':'M'}${X(h[0]).toFixed(1)},${YS(h[1]).toFixed(1)}`).join('');
+ const sciArea=sciPath+`L${X(hist[hist.length-1][0]).toFixed(1)},${YS(0)}L${X(0)},${YS(0)}Z`;
+ const hpPath=hist.map((h,i)=>`${i?'L':'M'}${X(h[0]).toFixed(1)},${YH(h[2]).toFixed(1)}`).join('');
+ const evCol={ok:'#4fd08b',warn:'#f5c04a',bad:'#ff6b6b','':'#8c9bb5'};
+ const marks=ev.map(e=>`<g><circle cx="${X(e.m).toFixed(1)}" cy="${PT-12}" r="6" fill="${evCol[e.cls]||'#8c9bb5'}"/><title>Month ${e.m}: ${e.title}${e.timeout?' (missed)':''}</title><text x="${X(e.m).toFixed(1)}" y="${PT-9}" font-size="7" text-anchor="middle" fill="#0a1120">${e.timeout?'!':''}</text></g>`).join('');
+ const ticks=[0,.25,.5,.75,1].map(f=>Math.round(sc.months*f)).map(m=>`<text x="${X(m)}" y="${H-6}" font-size="10" fill="#62728e" text-anchor="middle" font-family="JetBrains Mono">M${m}</text>`).join('');
+ const chart=`<svg viewBox="0 0 ${W} ${H}" style="width:100%">
+  <defs><linearGradient id="sg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#f5a04a" stop-opacity=".35"/><stop offset="1" stop-color="#f5a04a" stop-opacity="0"/></linearGradient></defs>
+  ${[0,.25,.5,.75,1].map(f=>`<line x1="${PL}" x2="${W-PR}" y1="${PT+(H-PT-PB)*f}" y2="${PT+(H-PT-PB)*f}" stroke="#1c2a42"/>`).join('')}
+  <line x1="${PL}" x2="${W-PR}" y1="${YS(sc.target)}" y2="${YS(sc.target)}" stroke="#f5a04a" stroke-dasharray="5 4" opacity=".7"/>
+  <text x="${PL+4}" y="${YS(sc.target)-5}" font-size="10" fill="#f5a04a" font-family="JetBrains Mono">goal ${sc.target}</text>
+  ${c.delay?`<rect x="${X(0)}" y="${PT}" width="${X(c.delay)-X(0)}" height="${H-PT-PB}" fill="#4fc3f7" opacity=".06"/><text x="${X(c.delay/2)}" y="${PT+14}" font-size="9" fill="#4fc3f7" text-anchor="middle">transfer</text>`:''}
+  <path d="${sciArea}" fill="url(#sg)"/><path d="${sciPath}" fill="none" stroke="#f5a04a" stroke-width="2.5" class="draw"/>
+  <path d="${hpPath}" fill="none" stroke="#4fc3f7" stroke-width="2" opacity=".9" class="draw"/>
+  ${marks}${ticks}
+  <text x="${W-PR+4}" y="${YH(100)+4}" font-size="10" fill="#4fc3f7" font-family="JetBrains Mono">100%</text><text x="${W-PR+4}" y="${YH(0)}" font-size="10" fill="#4fc3f7" font-family="JetBrains Mono">0%</text>
+ </svg>`;
+ const sbar=(l,v,max,col)=>`<div class="sb"><div class="row"><span>${l}</span><span>${fmt(v)} / ${max}</span></div><div class="bar"><i class="grow" style="width:${Math.min(100,v/max*100)}%;background:${col||'var(--cyan)'}"></i></div></div>`;
+ // next unlock progress
+ const nextU=[...SCEN,...INST,...Object.values(PARTS).flat()].filter(o=>(o.rep||0)>A.rep).sort((a,b)=>a.rep-b.rep)[0];
+ const net=P.grant-P.cost;
+ $('main').innerHTML=`
+ <div class="res-hero ${res.survived?(s.total>=75?'win':'mid'):'lost'}">
+  <div class="res-l"><div class="label" style="color:var(--cyan)">${sc.name} · ${c.orb.name} · ${sc.months}-month mission${S.creative?' · 🎨 creative':''}</div>
+   <h2 class="res-h">${head}</h2><div class="pill" style="font-size:15px">${sub}</div>
+   <div class="achrow">${ach.map(a=>`<span class="ach ${a[3]?'on':''}" title="${a[2]}">${a[0]} ${a[1]}</span>`).join('')}</div>
+   <div class="pill" style="margin-top:6px">${got} of ${ach.length} achievements · hover a badge to see how to earn it</div></div>
+  <div class="res-r"><div class="ring big"><svg viewBox="0 0 120 120" width="170" height="170"><circle cx="60" cy="60" r="52" fill="none" stroke="#1c2a42" stroke-width="10"/><circle id="ringArc" cx="60" cy="60" r="52" fill="none" stroke="${s.total>=75?'#4fd08b':s.total>=60?'#f5a04a':'#ff6b6b'}" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 326.7" transform="rotate(-90 60 60)" style="transition:stroke-dasharray 1.2s ease-out"/></svg><b id="scoreNum">0</b></div>
+   <div class="stars">${'★'.repeat(s.stars)}<span>${'★'.repeat(3-s.stars)}</span></div><div class="rankb">${rank}</div></div>
+ </div>
+ <div class="tiles">
+  <div class="tile"><div class="label">Science</div><div class="tv" style="color:var(--accent)">${fmt(res.sci)}<small>/${sc.target}</small></div><div class="pill">${fmt(res.sci/sc.target*100)}% of the goal</div></div>
+  <div class="tile"><div class="label">${sc.impact}</div><div class="tv" style="color:var(--ch4)">${fmt(P.emitters)}</div><div class="pill">${REGION[sc.id]?`out of ${fmt(regionPlumes(sc.id).length)} real EMIT plumes here`:'measured from orbit'}</div></div>
+  <div class="tile"><div class="label">Methane detected</div><div class="tv" style="color:var(--ok)">${fmt(P.mt,2)}<small> Mt</small></div><div class="pill">measured over this mission</div></div>
+  <div class="tile"><div class="label">${S.creative?'Budget':'Net money'}</div><div class="tv" style="color:${S.creative?'var(--ch4)':net>=0?'var(--ok)':'var(--bad)'}">${S.creative?'∞':(net>=0?'+':'')+money(net)}</div><div class="pill">${S.creative?'Creative mode: no money changes':`grant ${money(P.grant)} − cost ${money(P.cost)}`}</div></div>
+ </div>
+ <div class="res-grid">
+  <div class="colp"><div class="sec" style="margin-top:0"><h3>Mission timeline</h3><small><span style="color:var(--accent)">━</span> science &nbsp; <span style="color:var(--cyan)">━</span> health &nbsp; ● alerts (green handled well, yellow okay, red bad)</small></div>${chart}
+   <div class="evlist">${ev.length?ev.map(e=>`<div class="evi"><span class="evd" style="background:${evCol[e.cls]||'#8c9bb5'}"></span><span class="mono">M${e.m}</span> ${e.icon} ${e.title}${e.timeout?' <b class="bad">· missed</b>':''}</div>`).join(''):'<div class="pill">A quiet flight with no alerts.</div>'}</div></div>
+  <div class="colp"><h3>Your spacecraft</h3>${craftSVG(c)}
+   <div class="parts">${['power','battery','storage','comms','adcs','engine','structure'].map(k=>`<span>${CAT_ICON[k]}</span><span class="nm">${c.p[k]?c.p[k].name:'none'}</span>`).join('')}<span>🔬</span><span class="nm">${c.insts.map(i=>i.name).join(', ')}</span><span>🛰</span><span class="nm">${c.L.name}</span></div></div>
+ </div>
+ <div class="cols3" style="margin-top:12px">
+  <div class="colp"><h3>Score breakdown</h3>
+   ${sbar('Science return',s.sSci,60)}${sbar(`Power margin (${fmt(s.pm*100)}%)`,s.sPow,10)}${sbar(`Mass margin (${fmt(s.mm*100)}%)`,s.sMass,10)}${sbar(`Survival (${res.months}/${sc.months} mo)`,s.sSurv,20,'var(--accent)')}
+   <div class="label" style="margin-top:14px">Rank ladder</div>
+   <div class="ladder">${[['Rookie Agency',0],['Field Scientist',60],['Methane Hunter',75],['Guardian of Earth',90]].map(r=>`<div class="${r[0]===rank?'on':s.total>=r[1]?'past':''}"><b>${r[0]}</b><span>${r[1]}+</span></div>`).join('')}</div></div>
+  <div class="colp"><h3>${S.creative?'Creative mode':'Agency ledger'}</h3>
+   ${S.creative?'<div class="why-box" style="border-color:var(--ch4)">🎨 No money, reputation, or stats changed. Switch to Campaign at HQ to play for real.</div>':`
+   <div class="mini"><span>Mission cost</span><span class="bad">−${money(P.cost)}</span></div>
+   <div class="mini"><span>Funding grant${P.first?'':' (repeat ×0.6)'}</span><span class="ok">+${money(P.grant)}</span></div>
+   <div class="mini"><span><b>Treasury now</b></span><span><b>${money(A.funds)}</b></span></div>
+   <div class="mini"><span>Team food (${c.food.name.toLowerCase()})</span><span>${money(c.foodCost)}</span></div>
+   <div class="mini"><span>Reputation</span><span style="color:var(--accent)">+${P.newStars} ★ → ★ ${A.rep}</span></div>
+   ${nextU?`<div class="label" style="margin-top:12px">Next unlock: ${nextU.name} at ★ ${nextU.rep}</div><div class="bar"><i class="grow" style="width:${Math.min(100,A.rep/nextU.rep*100)}%;background:var(--accent)"></i></div>`:'<div class="pill" style="margin-top:12px">Everything unlocked!</div>'}
+   ${P.unlocks.length?`<div class="label" style="margin-top:12px">Unlocked just now (${P.unlocks.length})</div><div class="achrow" style="margin-top:6px">${P.unlocks.map(u=>`<span class="ach on" style="border-color:var(--ch4);background:#1c1633">🔓 ${u.name}</span>`).join('')}</div>`:''}
+   <div class="pill" style="margin-top:10px;font-size:12px">The grant equals the reward × (score/100)<sup>1.5</sup>.</div>`}</div>
+  <div class="colp"><h3>What to improve</h3>${lessons.map(l=>`<div class="why-box">${l}</div>`).join('')}</div>
+ </div>
+ <div class="colp" style="margin-top:12px"><div class="sec" style="margin-top:0"><h3>🛰 Plumes you measured</h3><small>Real NASA EMIT detections in your target area</small></div>${plumeMap(sc.id,{zoom:true,gid:'rmap',hidden:true,r:REGION[sc.id]?2.2:1.4})}</div>
+ <div class="nav"><button class="btn ghost" onclick="redesign()">✏️ Redesign this mission</button><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" onclick="flyAgain()">🔁 Fly the same design again</button><a class="btn ghost" style="text-decoration:none;display:inline-flex;align-items:center" href="index.html">🏠 Home</a><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="design.html">🔁 Replay</a></span></div>`;
+ // animations: score count-up, ring, plume reveal
+ const target=s.total, t0=performance.now(), el=$('scoreNum');
+ const step=t=>{const k=Math.min(1,(t-t0)/1200), v=Math.round(target*(1-Math.pow(1-k,3))); if(el) el.textContent=v; if(k<1) requestAnimationFrame(step);}; requestAnimationFrame(step);
+ setTimeout(()=>{const a=$('ringArc'); if(a) a.setAttribute('stroke-dasharray',`${(target/100*326.7).toFixed(1)} 326.7`);},60);
+ const g=$('rmap'); if(g&&g.children){const n=Math.floor(g.children.length*Math.min(1,res.sci/sc.target)); for(let i=0;i<n;i++) setTimeout(()=>g.children[i]&&g.children[i].setAttribute('opacity','.85'),300+i*Math.min(25,1500/Math.max(1,n)));}
+}
+function redesign(){S.result=null;S.payout=null;S.step=1;render();window.scrollTo(0,0);}
+function flyAgain(){S.result=null;S.payout=null;S.step=4;S.votes=Array(S.n).fill(false);render();window.scrollTo(0,0);}
+function toHQ(){clearInterval(simTimer);if(F)clearInterval(F.cd);S.step=0;S.scen=null;defaults();render();window.scrollTo(0,0);}
+
+// ===================== SIDEBAR =====================
+function meter(label,val,max,txt,inv){const f=max>0?Math.min(1,val/max):0;const col=inv?(val>max?'var(--bad)':f>0.9?'var(--warn)':'var(--ok)'):'var(--ok)';
+ return `<div class="meter"><div class="row"><span>${label}</span><span>${txt}</span></div><div class="bar"><i style="width:${f*100}%;background:${col}"></i></div></div>`;}
+function rSide(){
+ const c=calc();
+ if(!c||S.step===0){$('side').innerHTML=`<h3>Why methane?</h3>
+ <div class="why-box">Methane (CH₄) traps about 80× more heat than CO₂ over 20 years, and it's responsible for roughly 30% of global warming so far. It breaks down in about a decade, so <b>cutting methane is the fastest way to slow warming</b>.</div>
+ <div class="why-box">Much of it comes from leaks: gas wells, pipelines, coal mines, landfills. Satellites can find the biggest leaks, and operators can often fix them within days.</div>
+ <h3 style="margin-top:12px">How to play</h3><p class="pill">1. Fund a mission from the board.<br>2. Buy power upgrades if you need them, then design the spacecraft and choose instruments.<br>3. Pick an orbit and rocket.<br>4. Choose a food budget for your team, then vote GO.<br>5. Fly the mission. The cost is paid at launch.<br>6. Score well to earn grants and ★ reputation.<br>7. Unlock harder missions and better tech.<br>8. Run out of money and your agency is shut down.</p>`;return;}
+ const sc=c.sc;
+ $('side').innerHTML=`<h3>${sc.name}</h3><div class="pill">${sc.goal}</div>
+ ${craftSVG(c)}
+ <div class="parts">${['power','battery','storage','comms','adcs','engine','structure'].map(k=>`<span>${CAT_ICON[k]}</span><span class="nm ${c.p[k]?'':'none'}" title="${c.p[k]?c.p[k].name:''}">${c.p[k]?c.p[k].name:'not chosen'}</span>`).join('')}<span>🔬</span><span class="nm ${c.insts.length?'':'none'}">${c.insts.length?c.insts.map(i=>i.name.replace(/^(Basic |NASA |Active )/,'')).join(', '):'no detectors'}</span></div>
+ ${S.step>=5?`<div class="meter"><div class="row"><span>${S.creative?'Cost (free in creative)':'Mission cost (paid)'}</span><span>${money(c.cost)}</span></div></div>`:meter('Cost vs. treasury',c.cost,A.funds,`${money(c.cost)} / ${money(A.funds)}`,true)}
+ ${meter('Power use',c.load,c.gen||1,`${fmt(c.load)} W / ${fmt(c.gen)} W`,true)}
+ <details style="font-size:13px;margin:-4px 0 8px"><summary class="pill" style="cursor:pointer">Where the power goes</summary>
+ <table style="font-size:13px">${[['💾 '+(c.p.storage?c.p.storage.name:'storage'),c.p.storage?c.p.storage.p:0],['📡 Transmitter (25% of the time)',c.p.comms?c.p.comms.p*0.25:0],['🧭 Pointing',c.p.adcs?c.p.adcs.p:0],['🚀 Thruster heater',c.p.engine&&c.p.engine.pw?c.p.engine.pw:0],['🔬 Detectors (50% of the time)',c.insts.reduce((a,x)=>a+x.p,0)*DUTY],['🌡 Survival heaters',c.sc.heater]].filter(x=>x[1]>0).map(x=>`<tr><td>${x[0]}</td><td>${fmt(x[1],1)} W</td></tr>`).join('')}
+ <tr><td><b>☀️ Made${c.orb&&c.orb.ecl?` (after ${fmt(c.orb.ecl*100)}% shadow)`:''}</b></td><td><b>${fmt(c.gen,1)} W</b></td></tr></table></details>
+ ${c.cap?meter('Launch mass',c.wet,c.cap,`${kg(c.wet)} / ${kg(c.cap)}`,true):`<div class="meter"><div class="row"><span>Mass</span><span>dry ${kg(c.dry)}${c.prop?' + fuel '+kg(c.prop):''}</span></div></div>`}
+ <div class="meter"><div class="row"><span>🍜 Team food</span><span>${money(c.foodCost)} · morale ${c.food.morale}%</span></div></div>
+ ${c.insts.length&&c.orb?meter('Data home',c.dataFrac,1,`${fmt(c.dataFrac*100)}%`):''}
+ ${c.orb&&c.insts.length?meter('Science forecast',c.sciExpected,sc.target,`${fmt(c.sciExpected)} / ${sc.target}`):''}
+ <div class="pill">Expected grant if you hit the goal: up to ${money(Math.round(sc.reward*(A.cleared[sc.id]?0.6:1)))}</div>`;
+}
+function craftSVG(c){
+ const p=c.p; let s='';
+ const panel=Math.min(80,18+A.power/4);
+ if(panel){s+=`<rect x="${76-panel}" y="52" width="${panel}" height="26" fill="#2b4a8a" stroke="#6aa9ff"/><rect x="144" y="52" width="${panel}" height="26" fill="#2b4a8a" stroke="#6aa9ff"/>`;
+  for(let i=1;i<4;i++){s+=`<line x1="${76-panel+i*panel/4}" y1="52" x2="${76-panel+i*panel/4}" y2="78" stroke="#6aa9ff" stroke-width=".5"/><line x1="${144+i*panel/4}" y1="52" x2="${144+i*panel/4}" y2="78" stroke="#6aa9ff" stroke-width=".5"/>`;}}
+ const dish=p.comms?{c_uhf:0,c_s:5,c_x:12,c_ng:0,c_ka:24,c_tbird:0}[p.comms.id]:0;
+ if(p.comms&&p.comms.id==='c_uhf') s+=`<line x1="110" y1="48" x2="110" y2="20" stroke="#555" stroke-width="1.5"/>`;
+ if(p.comms&&p.comms.id==='c_ng') s+=`<rect x="92" y="38" width="36" height="9" fill="#3f6aa8" stroke="#1d3f73"/>`;
+ if(dish) s+=`<path d="M${110-dish} 38 Q110 ${38+dish*0.7} ${110+dish} 38" fill="#d9d4c7"/><line x1="110" y1="38" x2="110" y2="48" stroke="#ccc"/>`;
+ if(p.comms&&p.comms.id==='c_tbird') s+=`<rect x="104" y="34" width="12" height="14" rx="2" fill="#444" stroke="#c58cff"/><line x1="110" y1="34" x2="110" y2="8" stroke="#c58cff" stroke-dasharray="2 2"/>`;
+ s+=`<rect x="76" y="48" width="68" height="70" rx="4" fill="#b8862f" stroke="#f2c06b"/>`;
+ 
+ if(p.battery&&p.battery.rtg) s+=`<rect x="150" y="84" width="12" height="34" rx="3" fill="#555" stroke="#aaa"/><line x1="144" y1="96" x2="150" y2="96" stroke="#aaa"/>`;
+ if(p.storage&&p.storage.ai) s+=`<text x="110" y="88" font-size="10" fill="#1a1205" text-anchor="middle" font-family="JetBrains Mono">AI</text>`;
+ c.insts.forEach((ins,i)=>{s+=`<rect x="${80+(i%4)*16}" y="${120+Math.floor(i/4)*12}" width="12" height="10" fill="${ins.id==='lidar'?'#ff6b6b':'#c58cff'}" stroke="#4a2f6a"/>`;});
+ if(S.inst.has('lidar')) s+=`<line x1="110" y1="132" x2="110" y2="160" stroke="#ff6b6b" stroke-dasharray="3 2"/>`;
+ if(p.engine&&p.engine.isp) s+=`<path d="M100 118 L120 118 L126 ${p.engine.isp>300?136:130} L94 ${p.engine.isp>300?136:130} Z" fill="${(p.engine.isp>500)?'#3a6aa8':'#666'}" stroke="#999"/>`;
+ return `<svg viewBox="0 0 220 160" style="width:100%;margin:8px 0;background:#0b1424;border-radius:10px;border:1px solid var(--line)">${s}<text x="6" y="154" font-size="10" fill="#8c9bb5" font-family="JetBrains Mono">dry ${fmt(c.dry)} kg</text></svg>`;
+}
+// ===================== PAGE HAND-OFF (shared by precautions.html / feedback.html) =====================
+// The design and the finished flight are passed between pages through localStorage.
+const PREV_PAGE='index.html';          // page before the Go / No-Go review (design pages)
+const HQ_PAGE='index.html';            // agency HQ
+const REVIEW_PAGE='precautions.html';
+const REPORT_PAGE='feedback.html';
+const DESIGN_KEY='methane-tycoon-design', FLIGHT_KEY='methane-tycoon-lastflight';
+function saveDesign(){try{localStorage.setItem(DESIGN_KEY,JSON.stringify({scen:S.scen,sel:S.sel,inst:[...S.inst],launch:S.launch,orbit:S.orbit,food:S.food,n:S.n,names:S.names}));}catch(e){}}
+function loadDesign(){try{const d=JSON.parse(localStorage.getItem(DESIGN_KEY)||'null'); if(!d||!find(SCEN,d.scen)) return false;
+ S.scen=d.scen; Object.assign(S.sel,d.sel||{}); S.inst=new Set(d.inst||[]); S.launch=d.launch; S.orbit=d.orbit; S.food=d.food||'cafe';
+ if(d.n) S.n=d.n; if(d.names) S.names=d.names; return true;}catch(e){return false;}}
+// Demo build (Permian Pilot) used when no design was handed over, so the page still works on its own.
+function demoDesign(){S.scen='pilot'; S.sel={power:null,battery:'b_lis',storage:'st_sc3',comms:'c_x',adcs:'a_rw',engine:'e_cold',structure:'s_al'};
+ S.inst=new Set(['ctx','mwir']); S.launch='r6'; S.orbit='sso'; S.food='cafe'; S.demo=true;}
+function toHQ(){clearInterval(simTimer);if(F)clearInterval(F.cd);location.href=HQ_PAGE;}
+function resetDesign(){closeReset(); location.href=PREV_PAGE;}
+
+// ===================== FEEDBACK PAGE: mission report & stats =====================
+redesign=function(){location.href=PREV_PAGE;};
+flyAgain=function(){location.href=REVIEW_PAGE;};
+(function boot(){
+ let fl=null; try{fl=JSON.parse(localStorage.getItem(FLIGHT_KEY)||'null');}catch(e){}
+ const ok=fl&&fl.result&&loadDesign();
+ const c=ok?calc():null;
+ if(!c||!c.orb||!c.L){
+  S.step=6; $('steps').style.display='none'; $('side').style.display='none'; document.querySelector('.grid').style.gridTemplateColumns='1fr';
+  $('main').innerHTML=`<h2>No mission report yet</h2><p class="lead">Fly a mission first. The report appears here after launch.</p><div class="nav"><span></span><span style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn ghost" style="text-decoration:none;display:inline-flex;align-items:center" href="index.html">🏠 Home</a><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="design.html">🔁 Replay</a></span></div>`;
+  hud(); return; }
+ S.creative=!!fl.creative; S.result={...fl.result,c}; S.payout=fl.payout; S.launchFunds=fl.launchFunds;
+ S.step=6; render();
+})();
+</script>
+<!-- Mission: Blue Marble mission report: verdict, statistics, start/end methane maps and timelapse -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="simulation/js/nasa/gibs.js"></script>
+<script src="simulation/js/map-common.js"></script>
+<script src="simulation/report/report.js"></script>
+</body>
+</html>

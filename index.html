@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mission: Blue Marble</title>
+  <meta name="description" content="Design a methane-hunting satellite, fly it in a simulated warming world, read the feedback and improve the design.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app/theme.css">
+  <link rel="stylesheet" href="app/shell.css">
+  <style>
+    .hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: center; padding: 26px 0 8px; }
+    .hero h1 { font-size: clamp(2.5rem, 7vw, 4.4rem); margin: .15em 0 .25em; line-height: 1.02; }
+    .hero h1 span { background: linear-gradient(90deg, #4cc3ff, #7cf2c8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .hero .lead { font-size: 1.12rem; }
+    .next-card { padding: 22px; border-radius: 16px; background: var(--panel-solid); border: 1px solid var(--line-strong); box-shadow: 0 20px 50px rgba(0,0,0,.4); }
+    .next-card .k { font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--methane); font-weight: 700; }
+    .next-card h2 { font-size: 1.5rem; margin: .3em 0 .35em; }
+    .next-card .btn { margin: 6px 0 0; }
+    .next-card .reset { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: .85rem; color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .next-card .reset button { margin: 0; }
+
+    /* the loop */
+    .loop { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 14px; }
+    .loop-card { position: relative; display: flex; flex-direction: column; padding: 20px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); text-decoration: none; color: inherit; transition: border-color .15s, transform .15s; }
+    .loop-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .loop-card.is-next { border-color: rgba(255,138,61,.6); box-shadow: 0 0 0 1px rgba(255,138,61,.25), 0 10px 30px rgba(255,138,61,.12); }
+    .loop-card .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .loop-card .n { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; font-family: var(--mono); font-weight: 700; border: 1.5px solid var(--accent); color: var(--accent); }
+    .loop-card .ico { font-size: 2rem; margin: 12px 0 2px; }
+    .loop-card h3 { margin: 4px 0 6px; font-size: 1.15rem; text-transform: none; letter-spacing: 0; color: var(--text); }
+    .loop-card ul { margin: 6px 0 0; padding-left: 18px; color: var(--text-2); font-size: .9rem; }
+    .loop-card li { margin: 2px 0; }
+    .loop-card .go { margin-top: auto; padding-top: 14px; color: var(--accent); font-weight: 700; font-size: .92rem; }
+    .loop-card:not(:last-child)::after { content: '→'; position: absolute; right: -15px; top: 50%; transform: translateY(-50%); z-index: 2; color: var(--accent); font-size: 18px; background: var(--bg); border-radius: 50%; width: 14px; text-align: center; }
+    .loop-back { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; padding: 10px; border: 1px dashed rgba(124,242,200,.45); border-radius: 12px; color: var(--accent-2); font-size: .92rem; text-align: center; }
+
+    .data-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .data-card { display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); text-decoration: none; color: inherit; }
+    .data-card:hover { border-color: var(--accent); }
+    .data-card .ico { font-size: 1.6rem; }
+    .data-card b { display: block; color: var(--text); margin-bottom: 2px; }
+    .data-card span { color: var(--text-2); font-size: .9rem; }
+
+    @media (max-width: 860px) {
+      .hero { grid-template-columns: minmax(0, 1fr); }
+      .loop { grid-template-columns: minmax(0, 1fr); }
+      .loop-card:not(:last-child)::after { content: '↓'; right: 50%; top: auto; bottom: -15px; transform: translateX(50%); }
+    }
+  </style>
+</head>
+<body>
+  <nav id="appbar" data-step="home"></nav>
+  <script src="app/shell.js"></script>
+
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">CurioFrontierX · NASA Space Apps 2026</p>
+        <h1>Mission:<br><span>Blue Marble</span></h1>
+        <p class="lead">You're the Mission Director of a young space agency, and Earth is counting on you.
+          Design satellites that find where methane leaks are worst — oil and gas fields, farms, landfills, thawing permafrost —
+          fly them in a simulated, warming world, and use the feedback to build a better one.</p>
+      </div>
+      <aside class="next-card" id="next-card" aria-live="polite"></aside>
+    </section>
+
+    <section>
+      <h3>How a mission works</h3>
+      <div class="loop" id="loop">
+        <a class="loop-card" href="design.html" data-step="design">
+          <div class="top"><span class="n">1</span><span class="pill" data-status></span></div>
+          <div class="ico" aria-hidden="true">🔧</div>
+          <h3>Design</h3>
+          <p>Engineer a methane-monitoring satellite inside your budget.</p>
+          <ul><li>Pick battery, thruster, storage, radio and detector</li><li>Set mission length and difficulty</li><li>Check live launch weather</li></ul>
+          <span class="go">Open the builder →</span>
+        </a>
+        <a class="loop-card" href="simulation.html" data-step="simulate">
+          <div class="top"><span class="n">2</span><span class="pill" data-status></span></div>
+          <div class="ico" aria-hidden="true">🚀</div>
+          <h3>Simulate</h3>
+          <p>Launch it and run your agency in a warming world.</p>
+          <ul><li>Fly the launch and reach orbit</li><li>Find leaks on the live methane map</li><li>Manage funds, trust and events</li></ul>
+          <span class="go">Go to mission control →</span>
+        </a>
+        <a class="loop-card" href="feedback.html?from=simulation" data-step="feedback">
+          <div class="top"><span class="n">3</span><span class="pill" data-status></span></div>
+          <div class="ico" aria-hidden="true">📈</div>
+          <h3>Feedback</h3>
+          <p>See what your design achieved and what to change.</p>
+          <ul><li>Verdict, score and climate impact</li><li>Every decision, explained</li><li>Design tips for the next iteration</li></ul>
+          <span class="go">Read the debrief →</span>
+        </a>
+      </div>
+      <div class="loop-back">↺ <span>Take the feedback back to <b>Design</b>, improve the satellite and fly again. Each mission is saved so you can compare iterations.</span></div>
+    </section>
+
+    <section style="margin-top:34px">
+      <h3>Research with real NASA data (optional)</h3>
+      <div class="data-row">
+        <a class="data-card" href="hotspots.html"><span class="ico" aria-hidden="true">🌐</span><div><b>Methane hotspots</b><span>Monthly methane emissions on a 3D globe (US Greenhouse Gas Center). Find where your satellite should look.</span></div></a>
+        <a class="data-card" href="imagery.html"><span class="ico" aria-hidden="true">🛰️</span><div><b>Live NASA imagery</b><span>NASA GIBS true colour, clouds and night imagery: see what blinds a methane sensor.</span></div></a>
+      </div>
+    </section>
+
+    <footer class="site-foot">An independent team project. This is not an official NASA website. Progress is saved in this browser.</footer>
+  </main>
+
+  <script src="app/home.js"></script>
+</body>
+</html>

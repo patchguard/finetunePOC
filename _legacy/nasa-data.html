@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Explore NASA Data | CurioFrontierX</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="design.html">Design Configuration</a>
+    <a href="nasa-data.html" class="active">Explore NASA Data</a>
+    <a href="methane.html">Methane Hotspots</a>
+  </nav>
+  <main>
+    <p class="label">Earth Observation · Optional</p>
+    <h1>Explore NASA Data</h1>
+    <p>Browse live imagery from NASA GIBS (no API key required) and see how clouds and day/night cycles affect methane detection over emission hotspots. Launch weather is checked on the <a href="design.html" style="color:#9cdcff">Design Configuration</a> page.</p>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Data Source</h2>
+        <label for="layer">Imagery layer</label>
+        <select id="layer"></select>
+        <label for="region">Region of interest</label>
+        <select id="region"></select>
+        <label for="date">Date</label>
+        <input type="date" id="date">
+        <label for="resolution">Image width (px)</label>
+        <select id="resolution">
+          <option value="512">512 (fast)</option>
+          <option value="1024">1024</option>
+          <option value="2048">2048 (detailed)</option>
+        </select>
+        <button id="loadBtn">Load imagery</button>
+        <button id="saveBtn" class="secondary">Save settings</button>
+        <p class="toast" id="toast"></p>
+      </section>
+
+      <section class="panel">
+        <h2>Detection Outlook</h2>
+        <div class="stat"><span>Saved satellite design</span><span id="designText"></span></div>
+        <div class="stat"><span>Instrument</span><span id="instText"></span></div>
+        <div class="stat"><span>Layer type</span><span id="layerType"></span></div>
+        <p id="outlook" class="muted"></p>
+        <p class="muted">Tip: compare True Color with Cloud Fraction for the same date to see where a passive SWIR sensor would be blind.</p>
+      </section>
+    </div>
+
+    <section class="panel">
+      <h2 id="mapTitle">Imagery</h2>
+      <img id="map" class="map" alt="NASA GIBS imagery">
+      <p class="muted" id="mapStatus"></p>
+      <p class="muted">Imagery courtesy of NASA EOSDIS Global Imagery Browse Services (GIBS).</p>
+    </section>
+
+    <footer>An independent team project. This is not an official NASA website.</footer>
+  </main>
+  <script src="assets/nasa-data.js"></script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+/* =========================================================================
+   Mission: Blue Marble — shared theme for the document-style pages
+   (Home, Design, Feedback, NASA Data). Tokens are the game theme from
+   simulation/css/sim.css so every page looks like the simulation.
+   ========================================================================= */
+:root {
+  --bg: #050b18;
+  --bg-2: #0a1428;
+  --panel: rgba(12, 22, 44, 0.92);
+  --panel-solid: #0c1630;
+  --line: rgba(120, 170, 255, 0.16);
+  --line-strong: rgba(120, 170, 255, 0.34);
+  --text: #e7eefc;
+  --text-2: #b8c6e2;
+  --muted: #8396ba;
+  --accent: #4cc3ff;
+  --accent-2: #7cf2c8;
+  --good: #3ddc84;
+  --warn: #ffc24b;
+  --fail: #ff5d6c;
+  --methane: #ff8a3d;
+  --star: #ffd257;
+  --radius: 12px;
+  --font: 'Space Grotesk', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --grad: linear-gradient(135deg, #2b8cff, #23c6d8);
+  --grad-go: linear-gradient(90deg, #ffd27a, #ff8a5c);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  min-height: 100vh; color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.55;
+  background: radial-gradient(1200px 600px at 85% -10%, #12284d 0%, transparent 60%), var(--bg);
+  background-attachment: fixed;
+}
+a { color: var(--accent); }
+h1, h2, h3 { line-height: 1.2; letter-spacing: -0.01em; }
+h1 { font-size: clamp(1.9rem, 4.2vw, 2.7rem); margin: .15em 0 .3em; }
+h2 { font-size: 1.25rem; margin: 0 0 .6em; }
+h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); font-weight: 600; margin: 16px 0 8px; }
+p { margin: 0 0 .7em; color: var(--text-2); }
+.muted { color: var(--muted); }
+.small { font-size: .8rem; }
+.mono { font-family: var(--mono); }
+.ok { color: var(--good); } .bad { color: var(--fail); } .warn { color: var(--warn); }
+[hidden] { display: none !important; }
+
+/* ---------- page layout ---------- */
+.wrap { max-width: 1120px; margin: 0 auto; padding: 28px 16px 120px; }
+.page-head { margin: 6px 0 18px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--accent-2); letter-spacing: .12em; text-transform: uppercase; font-size: .78rem; font-weight: 600; margin: 0; }
+.eyebrow .num { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(124,242,200,.15); border: 1px solid rgba(124,242,200,.5); font-size: 11px; letter-spacing: 0; }
+.lead { font-size: 1.05rem; max-width: 760px; }
+.label { color: var(--accent-2); letter-spacing: .1em; text-transform: uppercase; font-size: .78rem; font-weight: 600; margin: 0; }
+.panel { margin-top: 16px; padding: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; }
+.panel > h2:first-child { margin-top: 0; }
+.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.grid > .panel { margin-top: 0; }
+.grid-gap { margin-top: 16px; }
+footer.site-foot { margin-top: 48px; color: var(--muted); font-size: .82rem; border-top: 1px solid var(--line); padding-top: 14px; }
+
+/* ---------- form controls ---------- */
+label { display: block; margin-top: 12px; font-weight: 600; font-size: .92rem; }
+select, input[type=text], input[type=date], input[type=number], input:not([type]) {
+  width: 100%; margin-top: 4px; padding: 8px 10px; font: inherit; font-size: .92rem;
+  background: var(--bg-2); color: var(--text); border: 1px solid var(--line-strong); border-radius: 8px;
+}
+input[type=range] { accent-color: var(--accent); }
+input[type=checkbox] { accent-color: var(--accent); width: auto; }
+select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* buttons: <button> and .btn links share one look */
+button, .btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; margin: 12px 10px 0 0;
+  padding: 10px 18px; font: inherit; font-weight: 700; font-size: .95rem; text-decoration: none; cursor: pointer;
+  color: #031026; background: var(--grad); border: 1px solid transparent; border-radius: 9px;
+  transition: filter .15s, transform .1s;
+}
+button:hover:not(:disabled), .btn:hover { filter: brightness(1.12); }
+button:active:not(:disabled), .btn:active { transform: translateY(1px); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+button.secondary, .btn.ghost { background: rgba(255,255,255,.04); color: var(--text); border-color: var(--line-strong); }
+button.secondary:hover, .btn.ghost:hover { border-color: var(--accent); }
+.btn.go, button.go { color: #1a0c00; background: var(--grad-go); box-shadow: 0 6px 22px rgba(255,138,92,.35); }
+.btn.big, button.big { padding: 14px 30px; font-size: 1.1rem; border-radius: 12px; }
+.btn.small, button.small { padding: 6px 12px; font-size: .82rem; margin-top: 6px; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+.btn-row > * { margin: 0; }
+
+/* ---------- data bits used by the design / data pages ---------- */
+.stat { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed var(--line-strong); padding: 6px 0; font-size: .92rem; }
+.stat > span:first-child { color: var(--muted); }
+.bar { height: 10px; background: var(--bg-2); border-radius: 6px; overflow: hidden; margin: 4px 0 10px; }
+.bar > div { height: 100%; background: var(--accent-2); transition: width .2s; }
+.rating { display: grid; grid-template-columns: 100px 1fr 44px; align-items: center; gap: 10px; font-size: .88rem; }
+.rating .bar { height: 12px; margin: 5px 0; }
+.rating.overall { font-weight: 700; border-top: 1px dashed var(--line-strong); margin-top: 6px; padding-top: 6px; }
+.legend { margin-top: 14px; padding: 14px 16px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; }
+.toast { min-height: 1.4em; color: var(--accent-2); margin: 0; }
+.map { width: 100%; border-radius: 10px; border: 1px solid var(--line-strong); background: #000; min-height: 200px; display: block; }
+.note { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line-strong); background: rgba(76,195,255,.06); color: var(--text-2); }
+.note.warn { border-color: rgba(255,194,75,.45); background: rgba(255,194,75,.07); }
+.note.good { border-color: rgba(61,220,132,.45); background: rgba(61,220,132,.07); }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: .78rem; font-weight: 600;
+  background: rgba(255,255,255,.05); border: 1px solid var(--line-strong); color: var(--text-2); white-space: nowrap; }
+.pill.good { color: var(--good); border-color: rgba(61,220,132,.45); }
+.pill.warn { color: var(--warn); border-color: rgba(255,194,75,.45); }
+.pill.bad { color: var(--fail); border-color: rgba(255,93,108,.45); }
+.pill.accent { color: var(--accent); border-color: rgba(76,195,255,.5); }
+.stars { color: var(--star); letter-spacing: 1px; } .stars .off { color: rgba(255,255,255,.15); }
+
+/* hover notes explaining each part (assets/part-notes.js) */
+[data-note-cat] { cursor: help; }
+select[data-note-cat] { cursor: pointer; }
+.part-note { position: fixed; z-index: 2000; max-width: 300px; padding: 10px 12px; border-radius: 10px; pointer-events: none;
+  background: var(--panel-solid); border: 1px solid var(--line-strong); box-shadow: 0 8px 24px rgba(0,0,0,.5); color: var(--text); font-size: 13px; line-height: 1.45; }
+.part-note p { margin: 6px 0 0; color: var(--text); }
+.part-note .note-title { font-weight: 700; }
+.part-note .note-rating { font-size: 12px; color: var(--accent-2); }
+.part-note .note-cat { font-size: 12px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 6px; }
+
+/* sticky action bar at the bottom of a step page */
+.action-bar { position: sticky; bottom: 0; z-index: 50; margin-top: 24px; padding: 12px 0 14px;
+  background: linear-gradient(to top, var(--bg) 70%, rgba(5,11,24,0)); }
+.action-bar .inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: space-between;
+  padding: 12px 16px; border-radius: 14px; background: var(--panel-solid); border: 1px solid var(--line-strong); box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+.action-bar .summary { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; color: var(--text-2); }
+.action-bar .summary b { color: var(--text); }
+.action-bar button, .action-bar .btn { margin: 0; }
+
+/* segmented sub-navigation (NASA Data pages) */
+.subnav { display: flex; width: fit-content; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 10px; background: rgba(255,255,255,.04); border: 1px solid var(--line); margin-bottom: 6px; }
+.subnav a { padding: 7px 14px; border-radius: 7px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: .9rem; }
+.subnav a:hover { color: var(--text); }
+.subnav a.on { color: var(--text); background: rgba(76,195,255,.18); }
+
+@media (max-width: 640px) {
+  .panel { padding: 16px; }
+  .wrap { padding-top: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ---------- design check: errors from the engine's own rules (app/engine-check.js) ---------- */
+.check-panel { border-width: 2px; }
+.check-panel.fail { border-color: rgba(255,93,108,.75); background: linear-gradient(135deg, rgba(255,93,108,.14), var(--panel) 60%); }
+.check-panel.warn { border-color: rgba(255,194,75,.6); background: linear-gradient(135deg, rgba(255,194,75,.09), var(--panel) 60%); }
+.check-panel.ok { border-color: rgba(61,220,132,.5); background: linear-gradient(135deg, rgba(61,220,132,.08), var(--panel) 60%); }
+.check-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.check-head .big { font-size: 2rem; line-height: 1; }
+.check-head h2 { margin: 0; font-size: 1.2rem; }
+.check-panel.fail .check-head h2 { color: var(--fail); }
+.check-panel.warn .check-head h2 { color: var(--warn); }
+.check-panel.ok .check-head h2 { color: var(--good); }
+.check-head .score { margin-left: auto; text-align: right; font-family: var(--mono); }
+.check-head .score b { font-size: 1.6rem; }
+.issues { display: grid; gap: 8px; margin-top: 12px; }
+.issue { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 10px; background: rgba(5,11,24,.6); border: 1px solid var(--line); border-left-width: 4px; }
+.issue.fail { border-left-color: var(--fail); }
+.issue.warn { border-left-color: var(--warn); }
+.issue.info { border-left-color: var(--accent); }
+.issue .tag { font-size: .7rem; font-weight: 800; letter-spacing: .08em; padding: 3px 7px; border-radius: 6px; white-space: nowrap; }
+.issue.fail .tag { background: var(--fail); color: #fff; }
+.issue.warn .tag { background: var(--warn); color: #241600; }
+.issue.info .tag { background: rgba(76,195,255,.2); color: var(--accent); }
+.issue b { display: block; font-size: .92rem; }
+.issue small { color: var(--muted); font-size: .82rem; }
+.issue button, .issue .btn { margin: 0; }
+.issue.info-more { display: none; }
+.issues.show-info .issue.info-more { display: grid; }
+@media (max-width: 560px) { .issue { grid-template-columns: 1fr; } }
+
+/* a form field the design check blames */
+select.field-fail, input.field-fail { border: 2px solid var(--fail); background: rgba(255,93,108,.1); box-shadow: 0 0 0 3px rgba(255,93,108,.18); }
+select.field-warn, input.field-warn { border: 2px solid var(--warn); background: rgba(255,194,75,.07); }
+.flag { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 6px; font-size: .7rem; font-weight: 800; letter-spacing: .05em; vertical-align: 1px; }
+.flag.fail { background: var(--fail); color: #fff; }
+.flag.warn { background: var(--warn); color: #241600; }
+.pill.fail-solid { background: var(--fail); color: #fff; border-color: var(--fail); }
+
+.check-panel.todo { border-color: rgba(76,195,255,.5); background: linear-gradient(135deg, rgba(76,195,255,.08), var(--panel) 60%); }
+.check-panel.todo .check-head h2 { color: var(--accent); }
+.flag.todo { background: rgba(76,195,255,.2); color: var(--accent); border: 1px solid rgba(76,195,255,.5); }
+.check-head > div:not(.score) { flex: 1; min-width: 220px; }

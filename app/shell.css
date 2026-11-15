@@ -1,0 +1,63 @@
+/* =========================================================================
+   Mission: Blue Marble — the one app bar every page shares (app/shell.js).
+   Every class starts with ab- so it never clashes with the simulation's CSS.
+   ========================================================================= */
+.ab {
+  --ab-h: 56px;
+  position: sticky; top: 0; z-index: 1000; display: flex; align-items: center; gap: 14px; height: var(--ab-h); padding: 0 14px;
+  background: rgba(5, 11, 24, .96); border-bottom: 1px solid rgba(120,170,255,.16); backdrop-filter: blur(10px);
+  font-family: 'Space Grotesk', system-ui, sans-serif; color: #e7eefc; font-size: 14px; line-height: 1.2;
+}
+.ab a { text-decoration: none; color: inherit; }
+.ab-brand { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; font-size: 16px; white-space: nowrap; }
+.ab-brand:hover span { text-decoration: underline; }
+.ab-brand .ab-globe { font-size: 18px; }
+
+/* the loop: 1 Design → 2 Simulate → 3 Feedback ↺ */
+.ab-steps { display: flex; align-items: center; gap: 4px; margin: 0 auto; padding: 0; list-style: none; min-width: 0; }
+.ab-step { position: relative; display: flex; align-items: center; gap: 9px; padding: 6px 12px 6px 7px; border-radius: 10px; border: 1px solid transparent; white-space: nowrap; }
+.ab-step:hover { background: rgba(255,255,255,.04); }
+.ab-n { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-weight: 700; font-size: 13px;
+  border: 1.5px solid rgba(120,170,255,.34); color: #8396ba; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+.ab-t { display: grid; gap: 1px; }
+.ab-t b { font-weight: 600; font-size: 14px; color: #b8c6e2; }
+.ab-t small { font-size: 11px; color: #8396ba; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+.ab-step.done .ab-n { border-color: rgba(61,220,132,.7); color: #3ddc84; background: rgba(61,220,132,.1); }
+.ab-step.live .ab-n { border-color: rgba(255,194,75,.8); color: #ffc24b; }
+.ab-step.on { background: rgba(76,195,255,.13); border-color: rgba(76,195,255,.45); }
+.ab-step.on .ab-n { border-color: #4cc3ff; background: #4cc3ff; color: #031026; }
+.ab-step.on .ab-t b { color: #e7eefc; }
+.ab-step.next::after { content: ''; position: absolute; top: 5px; left: 26px; width: 8px; height: 8px; border-radius: 50%; background: #ff8a3d; box-shadow: 0 0 8px #ff8a3d; animation: ab-pulse 1.8s ease-in-out infinite; }
+@keyframes ab-pulse { 50% { opacity: .35; } }
+.ab-sep { color: rgba(120,170,255,.4); font-size: 16px; padding: 0 2px; user-select: none; }
+.ab-loop { display: grid; place-items: center; width: 30px; height: 30px; margin-left: 2px; border-radius: 50%; border: 1px dashed rgba(124,242,200,.5); color: #7cf2c8; font-size: 15px; }
+.ab-loop:hover { background: rgba(124,242,200,.1); }
+
+.ab-right { display: flex; align-items: center; gap: 8px; flex: none; }
+.ab-link { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 9px; color: #b8c6e2 !important; border: 1px solid rgba(120,170,255,.16); white-space: nowrap; }
+.ab-link:hover { color: #e7eefc !important; border-color: rgba(76,195,255,.6); }
+.ab-link.on { color: #e7eefc !important; background: rgba(76,195,255,.13); border-color: rgba(76,195,255,.45); }
+/* page-specific pill moved into the bar (e.g. the Design page's budget) */
+.ab-extra { display: flex; align-items: center; gap: 7px; padding: 6px 13px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(120,170,255,.34); white-space: nowrap; font-size: 13.5px; }
+.ab-extra .ab-extra-label { color: #8396ba; }
+.ab-extra b { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; }
+.ab-extra .ok { color: #3ddc84; } .ab-extra .bad { color: #ff5d6c; }
+
+@media (max-width: 1080px) {
+  .ab-t small { display: none; }
+  .ab-brand span { display: none; }
+}
+@media (max-width: 760px) {
+  .ab { gap: 8px; padding: 0 10px; }
+  .ab-step { padding: 5px 7px 5px 5px; gap: 6px; }
+  .ab-t b { font-size: 13px; }
+  .ab-link span, .ab-extra .ab-extra-label { display: none; }
+  .ab-sep { padding: 0; }
+}
+@media (max-width: 520px) {
+  .ab-t { display: none; }
+  .ab-step.on .ab-t { display: grid; }
+  .ab-loop { display: none; }
+  .ab-extra { padding: 5px 9px; }
+}
+@media (prefers-reduced-motion: reduce) { .ab-step.next::after { animation: none; } }

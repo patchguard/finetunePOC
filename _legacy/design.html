@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Satellite Builder | Blue Marble</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="game-theme">
+  <!-- Same top bar as simulation.html. Tabs open the simulation on that view (simulation.html?view=...). -->
+  <header class="topbar">
+    <a class="brand" href="index.html" title="Mission: Blue Marble start page">🌍 <span>Blue Marble</span></a>
+    <nav class="tabs" aria-label="Game views">
+      <a class="tab-link" href="simulation.html?view=map">🌡️ <span>Methane Emissions</span></a>
+      <a class="tab-link" href="simulation.html?view=orbit">🛰️ <span>Orbit Viewer</span></a>
+      <a class="tab-link on" href="design.html" aria-current="page">🔧 <span>Satellite Builder</span></a>
+      <a class="tab-link" href="simulation.html?view=launch">🚀 <span>Launch</span></a>
+      <a class="tab-link" href="simulation.html?view=ops">📊 <span>Mission Control</span></a>
+    </nav>
+    <div class="budget-pill" id="topBudgetPill" title="Agency funds left after parts">
+      <span>💰</span>
+      <span class="budget-label">Funds left</span>
+      <b id="topBudget" class="mono">—</b>
+    </div>
+  </header>
+  <main>
+    <p class="label">Mission Control</p>
+    <h1>Design Configuration</h1>
+    <p>Engineer your methane-monitoring satellite within budget and launch mass limits. Choices are saved in your browser.</p>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Hardware</h2>
+        <label for="missionName">Mission name</label>
+        <input id="missionName" maxlength="40">
+        <label for="battery">Battery</label>
+        <select id="battery"></select>
+        <label for="thruster">Thruster</label>
+        <select id="thruster"></select>
+        <label for="storage">Data storage</label>
+        <select id="storage"></select>
+        <label for="transmitter">Transmitter</label>
+        <select id="transmitter"></select>
+        <label for="detector">Methane detector</label>
+        <select id="detector"></select>
+        <label for="site">Launch site</label>
+        <select id="site"></select>
+      </section>
+
+      <!-- Mission settings (game conditions for the simulation): simulation/settings/mission-settings.js -->
+      <section class="panel" id="mission-settings"></section>
+
+      <section class="panel">
+        <h2>Build Overview</h2>
+        <p class="muted">How good each part is (green ≥ 75%, yellow ≥ 50%, red below) and what your satellite looks like. Hover a part for a simple explanation.</p>
+        <div id="ratings"></div>
+        <div id="satDiagram" style="margin-top:12px"></div>
+        <p id="compat" class="bad"></p>
+      </section>
+    </div>
+
+    <section class="panel">
+      <h2>My Designs</h2>
+      <p class="muted">Save this build under its mission name and load it again later. Designs are saved in this browser.</p>
+      <button id="saveNamedBtn">💾 Save design</button>
+      <div id="library"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Launch Weather</h2>
+      <p class="muted">Today's weather at your launch site, read from live NASA satellite imagery. It updates when you change the site.</p>
+      <div class="grid">
+        <div>
+          <div class="stat"><span>Launch site</span><span id="siteText">—</span></div>
+          <div class="stat"><span>Data source</span><span id="wSrc">—</span></div>
+          <div class="stat"><span>Cloud cover</span><span id="wCloud">—</span></div>
+          <div class="stat"><span>Thunderstorms</span><span id="wStorm">—</span></div>
+          <div class="stat"><span>Wind (simulated)</span><span id="wWind">—</span></div>
+          <div class="stat"><span>Launch decision</span><span id="wVerdict">—</span></div>
+          <p id="wReasons" class="muted"></p>
+          <button id="weatherBtn" class="secondary">🔄 Re-check weather</button>
+        </div>
+        <div>
+          <img id="wImg" class="map" alt="Satellite image around the launch site">
+          <p id="wImgNote" class="muted"></p>
+        </div>
+      </div>
+    </section>
+
+    <div class="launch-bar">
+      <button id="simulateBtn" class="big-btn">🚀 Simulate Mission</button>
+      <p class="toast" id="toast"></p>
+    </div>
+
+    <footer>An independent team project. This is not an official NASA website.</footer>
+  </main>
+  <script src="assets/sites.js"></script>
+  <script src="assets/parts.js"></script>
+  <script src="assets/sat-diagram.js"></script>
+  <script src="assets/part-notes.js"></script>
+  <script src="assets/nasa-weather.js"></script>
+  <script src="assets/design.js"></script>
+  <script src="simulation/js/config.js"></script>
+  <script src="simulation/settings/mission-settings.js"></script>
+</body>
+</html>

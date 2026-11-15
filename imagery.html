@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live NASA Imagery · Blue Marble</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app/theme.css">
+  <link rel="stylesheet" href="app/shell.css">
+</head>
+<body>
+  <nav id="appbar" data-step="data"></nav>
+  <script src="app/shell.js"></script>
+
+  <main class="wrap">
+    <header class="page-head">
+      <nav class="subnav" aria-label="NASA data"><a href="hotspots.html">🌐 Methane hotspots</a><a href="imagery.html" class="on" aria-current="page">🛰️ Live imagery</a></nav>
+      <p class="eyebrow" style="margin-top:12px">NASA Data · Research</p>
+      <h1>Live NASA imagery</h1>
+      <p class="lead">Browse NASA GIBS imagery (no API key needed) and see how clouds and the day/night cycle affect methane detection over emission hotspots. Launch weather for your own site is on the <a href="design.html">Design</a> page.</p>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Data source</h2>
+        <label for="layer">Imagery layer</label>
+        <select id="layer"></select>
+        <label for="region">Region of interest</label>
+        <select id="region"></select>
+        <label for="date">Date</label>
+        <input type="date" id="date">
+        <label for="resolution">Image width (px)</label>
+        <select id="resolution">
+          <option value="512">512 (fast)</option>
+          <option value="1024">1024</option>
+          <option value="2048">2048 (detailed)</option>
+        </select>
+        <div class="btn-row"><button id="loadBtn">Load imagery</button><button id="saveBtn" class="secondary">Save settings</button></div>
+        <p class="toast" id="toast"></p>
+      </section>
+
+      <section class="panel">
+        <h2>Detection outlook</h2>
+        <div class="stat"><span>Saved satellite design</span><span id="designText"></span></div>
+        <div class="stat"><span>Instrument</span><span id="instText"></span></div>
+        <div class="stat"><span>Layer type</span><span id="layerType"></span></div>
+        <p id="outlook" class="muted" style="margin-top:10px"></p>
+        <p class="muted small">Tip: compare True Color with Cloud Fraction for the same date to see where a passive SWIR sensor would be blind.</p>
+        <a class="btn small ghost" href="design.html?focus=detector">🔧 Change the detector →</a>
+      </section>
+    </div>
+
+    <section class="panel">
+      <h2 id="mapTitle">Imagery</h2>
+      <img id="map" class="map" alt="NASA GIBS imagery">
+      <p class="muted small" id="mapStatus"></p>
+      <p class="muted small">Imagery courtesy of NASA EOSDIS Global Imagery Browse Services (GIBS).</p>
+    </section>
+
+    <footer class="site-foot">An independent team project. This is not an official NASA website.</footer>
+  </main>
+  <script src="assets/nasa-data.js"></script>
+</body>
+</html>

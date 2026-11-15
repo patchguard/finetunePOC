@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mission: Blue Marble</title>
+  <style>
+    :root {
+      --bg: #091121;
+      --text: #edf4ff;
+      --accent: #9cdcff;
+      --teal: #8de0d2;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: radial-gradient(1200px 600px at 80% -10%, #16305a 0%, transparent 60%), var(--bg);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+    h1 { line-height: 1.2; margin: 0 0 .5em; }
+    p { margin: 0 0 .6em; }
+
+    .page { max-width: 960px; margin: 0 auto; padding: 56px 16px 80px; }
+    .label { color: var(--teal); letter-spacing: .12em; text-transform: uppercase; font-size: .8rem; font-weight: 600; }
+    .hero h1 { font-size: clamp(2.4rem, 7vw, 4.2rem); margin: .2em 0 .3em; }
+    .lead { font-size: 1.15rem; color: #bac9df; max-width: 680px; margin-bottom: 28px; }
+
+    .btn {
+      display: inline-block; cursor: pointer; border: 0; border-radius: 9px;
+      padding: 14px 28px; background: var(--accent); color: var(--bg);
+      font: inherit; font-size: 1.1rem; font-weight: 700; text-decoration: none;
+    }
+    .btn:hover { filter: brightness(1.1); }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <p class="label">CurioFrontierX · NASA Space Apps 2026</p>
+      <h1>Mission:<br>Blue Marble</h1>
+      <p class="lead">
+        You're the Mission Director of a young space agency, and Earth is counting on you.
+        Design and launch satellites that find where methane emissions are most abundant,
+        from oil and gas fields to farms, landfills and thawing permafrost,
+        then turn that data into real action on the ground.
+        Keep the Climate Meter below the danger line until 2050.
+      </p>
+      <a class="btn" href="design.html">🚀 Start Mission</a>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Methane Hotspots | CurioFrontierX</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    #globe { height: 480px; border-radius: 12px; border: 1px solid #304461; overflow: hidden; cursor: grab; }
+    #globe:active { cursor: grabbing; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .controls select, .controls input[type=range] { width: auto; margin: 0; }
+    .ch4-bar { height: 12px; border-radius: 6px; margin: 6px 0 2px;
+      background: linear-gradient(90deg, #f7f4f9, #e7e1ef, #d4b9da, #c994c7, #df65b0, #e7298a, #ce1256, #980043, #67001f); }
+    .ch4-labels { display: flex; justify-content: space-between; font-size: .8rem; color: #bac9df; }
+    .rank { display: grid; grid-template-columns: 24px 1fr 2fr 70px; gap: 8px; align-items: center; font-size: .9rem; cursor: pointer; }
+    .rank:hover { color: #9cdcff; }
+    .rank .bar { height: 10px; margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="design.html">Design Configuration</a>
+    <a href="nasa-data.html">Explore NASA Data</a>
+    <a href="methane.html" class="active">Methane Hotspots</a>
+  </nav>
+  <main>
+    <p class="label">Earth Observation</p>
+    <h1>Where is methane coming from?</h1>
+    <p>Monthly methane emissions worldwide from the US Greenhouse Gas Center (CarbonTracker-CH₄). Darker red means more methane released. <strong>Drag the globe to spin it, scroll to zoom, and click anywhere to see the value there.</strong> Pink spikes mark the top regions; taller means more methane.</p>
+
+    <section class="panel">
+      <div class="controls">
+        <label for="source" style="margin:0">Source</label>
+        <select id="source">
+          <option value="total">All sources</option>
+          <option value="fossil">Fossil fuels (oil, gas, coal)</option>
+          <option value="microbial">Microbial (wetlands, farms, landfills)</option>
+          <option value="pyrogenic">Fires</option>
+        </select>
+        <label for="month" style="margin:0">Month</label>
+        <input type="range" id="month" min="0" max="311">
+        <strong id="monthOut"></strong>
+        <button id="playBtn" class="secondary" style="margin:0">▶ Play</button>
+      </div>
+      <div id="globe" style="margin-top:14px"></div>
+      <p id="globeStatus" class="muted">Loading NASA imagery and methane data…</p>
+      <p id="pointInfo" class="muted"></p>
+      <div class="legend">
+        <strong>Methane emissions</strong> <span class="muted">(grams of methane per m² per year)</span>
+        <div class="ch4-bar"></div>
+        <div class="ch4-labels"><span>0</span><span id="midLabel"></span><span id="maxLabel"></span></div>
+        <p class="muted small">Data: CarbonTracker-CH₄ v2025 (NOAA), served by the US Greenhouse Gas Center (NASA-led). Base map: NASA GIBS Blue Marble. Estimates are on a ~1° grid, so single facilities aren't visible.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Top methane regions this month</h2>
+      <p id="rankStatus" class="muted"></p>
+      <div id="ranking"></div>
+      <p class="muted small">Click a region to zoom to it.</p>
+    </section>
+
+    <footer>An independent team project. This is not an official NASA website.</footer>
+  </main>
+  <script src="https://unpkg.com/globe.gl@2.33.1/dist/globe.gl.min.js"></script>
+  <script src="assets/methane.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design · Blue Marble</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app/theme.css">
+  <link rel="stylesheet" href="app/shell.css">
+  <style>
+    .design-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .design-grid > .panel { margin-top: 0; }
+    @media (max-width: 1020px) { .design-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .design-grid #mission-settings { grid-column: 1 / -1; } }
+    @media (max-width: 680px) { .design-grid { grid-template-columns: minmax(0, 1fr); } }
+    .focus-flash { animation: flash 1.6s ease-out 2; border-color: var(--methane) !important; box-shadow: 0 0 0 3px rgba(255,138,61,.35); }
+    @keyframes flash { 50% { box-shadow: 0 0 0 6px rgba(255,138,61,.15); } }
+
+    /* feedback carried over from the last mission */
+    .carry { border-color: rgba(255,138,61,.45); background: linear-gradient(135deg, rgba(255,138,61,.08), var(--panel) 55%); }
+    .carry .lessons { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 10px; }
+    .lesson { display: flex; gap: 10px; padding: 12px; border-radius: 10px; background: rgba(5,11,24,.55); border: 1px solid var(--line); }
+    .lesson .i { font-size: 1.3rem; line-height: 1; }
+    .lesson .lt { display: block; font-size: .92rem; margin-bottom: 3px; }
+    .lesson p { font-size: .85rem; margin: 0 0 6px; }
+    .lesson button { margin: 0; }
+
+    /* my designs */
+    .lib { display: grid; gap: 8px; margin-top: 12px; }
+    .lib-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--line); }
+    .lib-row .name { font-weight: 700; }
+    .lib-row .meta { color: var(--muted); font-size: .82rem; flex: 1; min-width: 160px; }
+    .lib-row button { margin: 0; }
+    .save-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .save-row button { margin: 0; }
+  </style>
+</head>
+<body>
+  <nav id="appbar" data-step="design"></nav>
+  <!-- budget pill: design.js fills #topBudget; the shell moves it into the app bar -->
+  <div id="topBudgetPill" data-appbar-extra title="Agency funds left after parts"><span aria-hidden="true">💰</span><span class="ab-extra-label">Funds left</span><b id="topBudget" class="mono">—</b></div>
+  <script src="app/shell.js"></script>
+
+  <main class="wrap">
+    <header class="page-head">
+      <p class="eyebrow"><span class="num">1</span> Step 1 of 3 · Design</p>
+      <h1>Design your satellite</h1>
+      <p class="lead">Engineer a methane-monitoring satellite within your budget, set the mission conditions, then press <b>Save &amp; simulate</b>. Hover any part for a plain-language explanation.</p>
+    </header>
+
+    <!-- what the last mission taught us (app/design-page.js) -->
+    <section class="panel carry" id="carry" hidden></section>
+
+    <div class="design-grid">
+      <section class="panel" id="hardware">
+        <div class="panel-head"><h2 style="margin:0">🔧 Hardware</h2><span class="pill accent" id="starterTag" hidden title="No saved design yet: this is a balanced default build. Change any part to make it yours.">✨ Default design</span></div>
+        <label for="missionName">Mission name</label>
+        <input id="missionName" maxlength="40" placeholder="Name your mission, e.g. MethaneWatch-1">
+        <label for="battery">Battery</label>
+        <select id="battery"></select>
+        <label for="thruster">Thruster</label>
+        <select id="thruster"></select>
+        <label for="storage">Data storage</label>
+        <select id="storage"></select>
+        <label for="transmitter">Transmitter</label>
+        <select id="transmitter"></select>
+        <label for="detector">Methane detector</label>
+        <select id="detector"></select>
+        <label for="site">Launch site</label>
+        <select id="site"></select>
+      </section>
+
+      <section class="panel" id="overview">
+        <h2>📐 Build overview</h2>
+        <p class="muted small">How good each part is (green ≥ 75%, yellow ≥ 50%, red below) and what your satellite looks like.</p>
+        <div id="ratings"></div>
+        <div id="satDiagram" style="margin-top:12px"></div>
+        <p id="compat" class="bad"></p>
+      </section>
+
+      <!-- Mission settings (game conditions for the simulation): simulation/settings/mission-settings.js -->
+      <section class="panel" id="mission-settings"></section>
+    </div>
+
+    <section class="panel" id="weather">
+      <div class="panel-head"><h2>🌦️ Launch weather</h2><span class="muted small">Live NASA satellite imagery at your launch site</span></div>
+      <div class="grid">
+        <div>
+          <div class="stat"><span>Launch site</span><span id="siteText">—</span></div>
+          <div class="stat"><span>Data source</span><span id="wSrc">—</span></div>
+          <div class="stat"><span>Cloud cover</span><span id="wCloud">—</span></div>
+          <div class="stat"><span>Thunderstorms</span><span id="wStorm">—</span></div>
+          <div class="stat"><span>Wind (simulated)</span><span id="wWind">—</span></div>
+          <div class="stat"><span>Launch decision</span><span id="wVerdict">—</span></div>
+          <p id="wReasons" class="muted small" style="margin-top:8px"></p>
+          <button id="weatherBtn" class="secondary small">🔄 Re-check weather</button>
+        </div>
+        <div>
+          <img id="wImg" class="map" alt="Satellite image around the launch site">
+          <p id="wImgNote" class="muted small"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="library-panel">
+      <div class="panel-head"><h2>💾 My designs</h2><span class="muted small">Saved in this browser · compare and reuse builds</span></div>
+      <div class="save-row"><button id="saveNamedBtn" class="secondary">💾 Save this design</button><button id="clearLibBtn" class="secondary" title="Remove all saved designs, their scores and the last mission's feedback">🗑 Clear all</button><span class="muted small" id="libNote"></span></div>
+      <div class="lib" id="library"></div>
+    </section>
+
+    <div class="action-bar">
+      <div class="inner">
+        <div class="summary" id="designSummary"></div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <p class="toast" id="toast" aria-live="polite"></p>
+          <button id="simulateBtn" class="go big">🚀 Save &amp; simulate →</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-foot">An independent team project. This is not an official NASA website.</footer>
+  </main>
+
+  <script src="assets/sites.js"></script>
+  <script src="assets/parts.js"></script>
+  <script src="assets/sat-diagram.js"></script>
+  <script src="assets/part-notes.js"></script>
+  <script src="assets/nasa-weather.js"></script>
+  <script src="assets/design.js"></script>
+  <script src="simulation/js/config.js"></script>
+  <script src="simulation/settings/mission-settings.js"></script>
+  <script src="app/lessons.js"></script>
+  <script src="app/design-page.js"></script>
+</body>
+</html>

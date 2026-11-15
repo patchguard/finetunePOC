@@ -1,0 +1,157 @@
+<!doctype html>
+<!-- Mission: Blue Marble — Simulation page. Code and docs live in simulation/ (README.md, HANDOFF.md); NASA sources are listed in ../NASA_DATA_SOURCES.txt. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blue Marble Simulation</title>
+  <meta name="description" content="Mission: Blue Marble gameplay: launch and fly the methane-hunting satellite designed on the Design Configuration page over a simulated, warming Earth.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="simulation/css/sim.css">
+</head>
+<body>
+
+<!-- ========================= TOP BAR ========================= -->
+<header class="topbar">
+  <div class="tb-row">
+    <a class="brand" href="index.html" title="Mission: Blue Marble start page (the game is saved)">🌍 <span>Blue Marble</span></a>
+    <nav class="tabs" role="tablist" aria-label="Game views">
+      <button role="tab" data-view="map" class="on">🌡️ <span>Methane Emissions</span></button>
+      <button role="tab" data-view="orbit">🛰️ <span>Orbit Viewer</span></button>
+      <a class="tab-link" href="design.html" title="Build your satellite on the Design Configuration page (the game is saved)">🔧 <span>Satellite Builder</span></a>
+      <button role="tab" data-view="launch">🚀 <span>Launch</span><i class="badge-dot" id="launch-dot" hidden></i></button>
+      <button role="tab" data-view="ops">📊 <span>Mission Control</span></button>
+    </nav>
+    <div class="clock">
+      <div class="clock-date mono" id="clock-date">2027-01-01</div>
+      <div class="clock-sub mono" id="clock-sub">00:00 UTC · year 1 of 25</div>
+    </div>
+    <div class="warp" role="group" aria-label="Game speed" title="Game speed: how fast time passes in the world">
+      <span class="warp-cap">Game speed</span>
+      <button id="btn-pause" class="icon" title="Pause / resume (Space)">▶</button>
+      <button id="btn-slower" class="icon" title="Slower ( , )">«</button>
+      <span class="warp-label mono" id="warp-label">1 h/s</span>
+      <button id="btn-faster" class="icon" title="Faster ( . )">»</button>
+    </div>
+    <button id="btn-help" class="icon help-btn" title="How to play & tutorial">?</button>
+  </div>
+  <div class="tb-row stats" id="stats">
+    <div class="stat" title="Agency funds"><span>💰</span><b class="mono" id="st-funds">$0</b></div>
+    <div class="stat" title="Public support"><span>🌍</span><b class="mono" id="st-trust">0%</b><i class="mini"><i id="st-trust-bar"></i></i></div>
+    <div class="stat" title="Science points"><span>📡</span><b class="mono" id="st-science">0</b></div>
+    <div class="stat" title="Global mean warming above pre-industrial"><span>🌡️</span><b class="mono" id="st-dt">+0.00°C</b></div>
+    <div class="stat" title="Atmospheric methane (global mean)"><span>CH₄</span><b class="mono" id="st-ch4">0 ppb</b></div>
+    <div class="stat" title="Satellites in orbit"><span>🛰️</span><b class="mono" id="st-sats">0</b></div>
+    <div class="stat wide" title="Latest event" id="st-ticker"><span>📰</span><em id="ticker">Welcome, Director.</em></div>
+    <button class="btn small ghost" id="btn-round" title="End the mission and see the final report on the Feedback page">🏁 End mission</button>
+  </div>
+</header>
+
+<main id="views">
+  <!-- ========================= METHANE MAP ========================= -->
+  <section class="view active" id="view-map" aria-label="Methane emissions map">
+    <aside class="panel side left" id="map-controls">
+      <h3>Colour countries by</h3>
+      <div class="seg col" id="choro-seg">
+        <button data-choro="emissions" class="on">Methane emissions</button>
+        <button data-choro="trend">Change since the start</button>
+        <button data-choro="intensity">Emissions per km²</button>
+        <button data-choro="warming">Local warming impact</button>
+        <button data-choro="policy">Leak-control policy</button>
+        <button data-choro="none">Off</button>
+      </div>
+      <div class="legend" id="choro-legend"></div>
+      <h3>Show emission sites by</h3>
+      <div class="seg" id="site-seg"><button data-sm="source" class="on">Source (cause)</button><button data-sm="amount">Amount</button></div>
+      <div class="legend" id="site-legend"></div>
+      <h3>Game layers</h3>
+      <label class="check"><input type="checkbox" id="lyr-sites" checked> Emission sites &amp; super-emitters</label>
+      <label class="check"><input type="checkbox" id="lyr-tracks" checked> Satellite ground tracks</label>
+      <label class="check"><input type="checkbox" id="lyr-swath"> Instrument swaths</label>
+      <label class="check"><input type="checkbox" id="lyr-gs"> Ground stations</label>
+      <label class="check"><input type="checkbox" id="lyr-night" checked> Day / night terminator</label>
+      <h3>NASA GIBS imagery</h3>
+      <div class="seg" id="base-seg"></div>
+      <label class="date-field mono">Date <input type="date" id="gibs-date"></label>
+      <div class="chips" id="gibs-overlays"></div>
+      <div class="gibs-legend" id="gibs-legend"></div>
+      <p class="fine">Base maps and overlays are live NASA GIBS tiles. Country colours and leak sites come from the game simulation, seeded with real emission estimates.</p>
+    </aside>
+    <div class="map-wrap"><div id="map"></div></div>
+    <aside class="panel side right" id="map-info">
+      <div id="map-detail"></div>
+      <div class="global-box" id="map-global"></div>
+    </aside>
+  </section>
+
+  <!-- ========================= ORBIT VIEWER ========================= -->
+  <section class="view" id="view-orbit" aria-label="3D orbit viewer">
+    <div id="orbit-canvas-wrap"><canvas id="orbit-canvas"></canvas><div id="orbit-labels"></div></div>
+    <div class="orbit-toolbar panel">
+      <label class="check"><input type="checkbox" id="ov-orbits" checked> Orbits</label>
+      <label class="check"><input type="checkbox" id="ov-labels" checked> Labels</label>
+      <label class="check"><input type="checkbox" id="ov-gs" checked> Ground stations</label>
+      <label class="check"><input type="checkbox" id="ov-sites" checked> Leak sites</label>
+      <label class="check"><input type="checkbox" id="ov-methane"> AIRS methane on globe</label>
+      <label class="check"><input type="checkbox" id="ov-debris" checked> Debris</label>
+      <button class="btn small ghost" id="ov-focus-earth">⊙ Earth</button>
+    </div>
+    <div class="orbit-hint mono" id="orbit-hint">Drag to rotate · scroll to zoom · click a satellite to manage it</div>
+    <button class="btn small fleet-toggle" id="fleet-toggle">🛰️ Fleet ▸</button>
+    <aside class="panel fleet-panel" id="fleet-panel" hidden>
+      <div class="panel-head"><h3>Fleet</h3><button class="icon-btn" id="fleet-close" aria-label="Close">✕</button></div>
+      <ul class="fleet-list" id="fleet-list"></ul>
+    </aside>
+    <aside class="panel manage-panel" id="manage-panel" hidden></aside>
+  </section>
+
+  <!-- ========================= LAUNCH ========================= -->
+  <section class="view" id="view-launch" aria-label="Launch">
+    <div class="launch-planner" id="launch-planner"></div>
+    <div class="flight" id="flight" hidden>
+      <canvas id="flight-canvas"></canvas>
+      <div class="hud hud-left panel" id="hud-left"></div>
+      <div class="hud hud-right panel" id="hud-right"></div>
+      <div class="hud hud-bottom panel" id="hud-bottom"></div>
+      <div class="hud hud-top mono" id="hud-top"></div>
+      <div class="flight-msg" id="flight-msg" hidden></div>
+    </div>
+  </section>
+
+  <!-- ========================= MISSION CONTROL ========================= -->
+  <section class="view scroll" id="view-ops" aria-label="Mission Control"><div class="ops" id="ops"></div></section>
+
+</main>
+
+<!-- ========================= MODALS ========================= -->
+<dialog id="modal"><div id="modal-body"></div></dialog>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="simulation/js/config.js"></script>
+<script src="simulation/js/orbit.js"></script>
+<script src="simulation/js/catalog.js"></script>
+<script src="simulation/js/design.js"></script>
+<script src="simulation/js/sim.js"></script>
+<script src="simulation/js/ui.js"></script>
+<!-- NASA data access: one script per NASA service (see NASA_DATA_SOURCES.txt in the Project folder) -->
+<script src="simulation/js/nasa/gibs.js"></script>
+<script src="simulation/js/nasa/image-library.js"></script>
+<script src="simulation/js/design-input.js"></script>
+<script src="simulation/js/map-common.js"></script>
+<script src="simulation/js/view-map.js"></script>
+<script src="simulation/js/view-orbit.js"></script>
+<script src="simulation/js/flight.js"></script>
+<script src="simulation/js/flight-scene.js"></script>
+<script src="simulation/js/view-launch.js"></script>
+<script src="simulation/js/view-ops.js"></script>
+<script src="simulation/js/guide.js"></script>
+<script src="simulation/js/main.js"></script>
+</body>
+</html>

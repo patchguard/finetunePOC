@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Methane Hotspots · Blue Marble</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app/theme.css">
+  <link rel="stylesheet" href="app/shell.css">
+  <style>
+    #globe { height: 500px; border-radius: 12px; border: 1px solid var(--line-strong); overflow: hidden; cursor: grab; background: #02060f; }
+    #globe:active { cursor: grabbing; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .controls label { margin: 0; }
+    .controls select, .controls input[type=range] { width: auto; margin: 0; }
+    .controls input[type=range] { flex: 1; min-width: 160px; }
+    .controls button { margin: 0; }
+    .ch4-bar { height: 12px; border-radius: 6px; margin: 6px 0 2px;
+      background: linear-gradient(90deg, #f7f4f9, #e7e1ef, #d4b9da, #c994c7, #df65b0, #e7298a, #ce1256, #980043, #67001f); }
+    .ch4-labels { display: flex; justify-content: space-between; font-size: .8rem; color: var(--text-2); font-family: var(--mono); }
+    .rank { display: grid; grid-template-columns: 24px 1fr 2fr 70px; gap: 8px; align-items: center; font-size: .9rem; cursor: pointer; }
+    .rank:hover { color: var(--accent); }
+    .rank .bar { height: 10px; margin: 4px 0; }
+    .two { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .two > .panel { margin-top: 0; }
+    @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } #globe { height: 380px; } }
+  </style>
+</head>
+<body>
+  <nav id="appbar" data-step="data"></nav>
+  <script src="app/shell.js"></script>
+
+  <main class="wrap">
+    <header class="page-head">
+      <nav class="subnav" aria-label="NASA data"><a href="hotspots.html" class="on" aria-current="page">🌐 Methane hotspots</a><a href="imagery.html">🛰️ Live imagery</a></nav>
+      <p class="eyebrow" style="margin-top:12px">NASA Data · Research</p>
+      <h1>Where is methane coming from?</h1>
+      <p class="lead">Monthly methane emissions worldwide (CarbonTracker-CH₄, US Greenhouse Gas Center). Darker red means more methane. Drag to spin, scroll to zoom, click anywhere for the value there. Use it to decide what your satellite needs to see.</p>
+    </header>
+
+    <div class="two">
+      <section class="panel">
+        <div class="controls">
+          <label for="source">Source</label>
+          <select id="source">
+            <option value="total">All sources</option>
+            <option value="fossil">Fossil fuels (oil, gas, coal)</option>
+            <option value="microbial">Microbial (wetlands, farms, landfills)</option>
+            <option value="pyrogenic">Fires</option>
+          </select>
+          <label for="month">Month</label>
+          <input type="range" id="month" min="0" max="311">
+          <strong id="monthOut" class="mono"></strong>
+          <button id="playBtn" class="secondary small">▶ Play</button>
+        </div>
+        <div id="globe" style="margin-top:14px"></div>
+        <p id="globeStatus" class="muted small" style="margin-top:8px">Loading NASA imagery and methane data…</p>
+        <p id="pointInfo" class="muted"></p>
+        <div class="legend">
+          <strong>Methane emissions</strong> <span class="muted small">(grams of methane per m² per year)</span>
+          <div class="ch4-bar"></div>
+          <div class="ch4-labels"><span>0</span><span id="midLabel"></span><span id="maxLabel"></span></div>
+          <p class="muted small" style="margin:8px 0 0">Data: CarbonTracker-CH₄ v2025 (NOAA), served by the US Greenhouse Gas Center (NASA-led). Base map: NASA GIBS Blue Marble. ~1° grid, so single facilities aren't visible.</p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Top methane regions this month</h2>
+        <p id="rankStatus" class="muted small"></p>
+        <div id="ranking"></div>
+        <p class="muted small">Click a region to zoom to it.</p>
+        <div class="note" style="margin-top:14px">
+          <b>Use it in your design</b>
+          <p class="small" style="margin:4px 0 8px">Big fossil-fuel hotspots are point sources: a sharp (Zoom / LIDAR) detector pins them down. Wide wetland emissions need broad coverage.</p>
+          <a class="btn small" href="design.html?focus=detector">🔧 Choose a detector →</a>
+        </div>
+      </section>
+    </div>
+
+    <footer class="site-foot">An independent team project. This is not an official NASA website.</footer>
+  </main>
+  <script src="https://unpkg.com/globe.gl@2.33.1/dist/globe.gl.min.js"></script>
+  <script src="assets/methane.js"></script>
+</body>
+</html>
